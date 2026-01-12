@@ -1,0 +1,6 @@
+.vs/
+Build/
+Intermediate/
+Content/SDL3.dll
+ThirdParty/*
+*.sln
