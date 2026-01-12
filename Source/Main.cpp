@@ -4,6 +4,8 @@
 #include "Engine/Renderer/RenderSystem.h"
 #include "Engine/Math/Math.h"
 
+#include "Engine/Memory/ArenaAllocator.h"
+
 int main(int ArgCount, char** ArgValues) {
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -14,15 +16,37 @@ int main(int ArgCount, char** ArgValues) {
     SDL_Window* Window = SDL_CreateWindow("HARM", 800, 600, SDL_WINDOW_OPENGL);
     SDL_GLContext GLContext = SDL_GL_CreateContext(Window);
     SDL_GL_MakeCurrent(Window, GLContext);
+
+    // TODO: Add a name to the allocator
+    void* MainMemory = malloc(Engine::Memory::Megabytes(16));
+    Engine::Memory::ArenaAllocator MainArena = {};
+    Engine::Memory::InitArena(MainArena, MainMemory, Engine::Memory::Megabytes(16));
     
+    // Initialize the render device
     Engine::RenderCore::RenderDeviceDesc RenderDeviceDesc = {};
     RenderDeviceDesc.Width = 800;
     RenderDeviceDesc.Height = 600;
     RenderDeviceDesc.VSync = true;
     RenderDeviceDesc.DebugLayer = true;
 
-    Engine::RenderCore::RenderDevice* RenderDevice = new Engine::RenderCore::RenderDevice(RenderDeviceDesc);
-    Engine::Renderer::RenderSystem* RenderSystem = new Engine::Renderer::RenderSystem(RenderDevice);
+    void* RenderDeviceMemory = Engine::Memory::Alloc(
+            &MainArena.Base,
+            sizeof(Engine::RenderCore::RenderDevice),
+            alignof(Engine::RenderCore::RenderDevice),
+            Engine::Memory::AllocFlags::ZeroInit
+    );
+
+    Engine::RenderCore::RenderDevice* RenderDevice = new (RenderDeviceMemory) Engine::RenderCore::RenderDevice(RenderDeviceDesc);
+
+    // Initialize the render system
+    void* RenderSystemMemory = Engine::Memory::Alloc(
+            &MainArena.Base,
+            sizeof(Engine::Renderer::RenderSystem),
+            alignof(Engine::Renderer::RenderSystem),
+            Engine::Memory::AllocFlags::ZeroInit
+    );
+    
+    Engine::Renderer::RenderSystem* RenderSystem = new (RenderSystemMemory) Engine::Renderer::RenderSystem(RenderDevice);
 
     Engine::Renderer::Vertex Vertices[] = {
         { { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } },
