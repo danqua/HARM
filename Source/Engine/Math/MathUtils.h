@@ -6,6 +6,10 @@ namespace Engine::Math {
 
     constexpr f32 Pi32 = 3.14159265358979323846f;
 
+    inline f32 Abs(f32 Value) {
+        return (Value < 0.0f) ? -Value : Value;
+    }
+
     inline f32 Radians(f32 Deg) {
         return Deg * (Pi32 / 180.0f);
     }

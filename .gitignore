@@ -1,8 +1,11 @@
 .vs/
 Build/
 Intermediate/
-Content/SDL3.dll
+Content/*.dll
 
 ThirdParty/SDL3-*/
+
+*.vcxproj*
+*.vcxproj.filters
 
 *.sln
