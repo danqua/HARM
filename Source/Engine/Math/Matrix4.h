@@ -9,17 +9,16 @@ namespace Engine::Math {
 
     struct Matrix4 {
         f32 m[16];
-    };
-    
 
-    inline Matrix4 Identity() {
-        Matrix4 Result = {};
-        Result.m[0] = 1.0f;
-        Result.m[5] = 1.0f;
-        Result.m[10] = 1.0f;
-        Result.m[15] = 1.0f;
-        return Result;
-    }
+        static inline Matrix4 Identity() {
+            Matrix4 Result = {};
+            Result.m[0] = 1.0f;
+            Result.m[5] = 1.0f;
+            Result.m[10] = 1.0f;
+            Result.m[15] = 1.0f;
+            return Result;
+        }
+    };
 
     inline Matrix4 Perspective(f32 Fov, f32 Aspect, f32 Near, f32 Far) {
         Matrix4 Result = {};
@@ -31,6 +30,18 @@ namespace Engine::Math {
         Result.m[11] = -1.0f;
         Result.m[14] = -(2.0f * Far * Near) / (Far - Near);
 
+        return Result;
+    }
+
+    inline Matrix4 Orthographic(f32 Width, f32 Height, f32 Near, f32 Far) {
+        Matrix4 Result = {};
+        Result.m[0] = 2.0f / Width;
+        Result.m[5] = 2.0f / Height;
+        Result.m[10] = -2.0f / (Far - Near);
+        Result.m[12] = 0.0f;
+        Result.m[13] = 0.0f;
+        Result.m[14] = -(Far + Near) / (Far - Near);
+        Result.m[15] = 1.0f;
         return Result;
     }
 
@@ -47,25 +58,24 @@ namespace Engine::Math {
 
         Matrix4 Result = {};
         Result.m[0] = S.x;
-        Result.m[1] = U.x;
-        Result.m[2] = -F.x;
         Result.m[4] = S.y;
-        Result.m[5] = U.y;
-        Result.m[6] = -F.y;
         Result.m[8] = S.z;
+        Result.m[1] = U.x;
+        Result.m[5] = U.y;
         Result.m[9] = U.z;
+        Result.m[2] = -F.x;
+        Result.m[6] = -F.y;
         Result.m[10] = -F.z;
         Result.m[15] = 1.0f;
-
-        Result.m[12] = -(S.x * Eye.x + S.y * Eye.y + S.z * Eye.z);
-        Result.m[13] = -(U.x * Eye.x + U.y * Eye.y + U.z * Eye.z);
-        Result.m[14] = F.x * Eye.x + F.y * Eye.y + F.z * Eye.z;
+        Result.m[12] = -Dot(S, Eye);
+        Result.m[13] = -Dot(U, Eye);
+        Result.m[14] = Dot(F, Eye);
 
         return Result;
     }
 
     inline Matrix4 Translate(const Vector3& Translation) {
-        Matrix4 Result = Identity();
+        Matrix4 Result = Matrix4::Identity();
         Result.m[12] = Translation.x;
         Result.m[13] = Translation.y;
         Result.m[14] = Translation.z;
@@ -81,7 +91,7 @@ namespace Engine::Math {
     }
 
     inline Matrix4 Scale(const Vector3& Scaling) {
-        Matrix4 Result = Identity();
+        Matrix4 Result = Matrix4::Identity();
         Result.m[0] = Scaling.x;
         Result.m[5] = Scaling.y;
         Result.m[10] = Scaling.z;

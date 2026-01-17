@@ -13,4 +13,21 @@ namespace Engine::Math {
     inline f32 Degrees(f32 Rad) {
         return Rad * (180.0f / Pi32);
     }
+
+    inline f32 Sin(f32 Value) {
+        return sinf(Value);
+    }
+
+    inline f32 Cos(f32 Value) {
+        return cosf(Value);
+    }
+
+    inline f32 Tan(f32 Value) {
+        return tanf(Value);
+    }
+
+    inline f32 ATan2(f32 Y, f32 X) {
+        return atan2f(Y, X);
+    }
+
 }

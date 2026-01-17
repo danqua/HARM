@@ -74,7 +74,20 @@ namespace Engine::Math {
             Vector3 Result(x / Scalar, y / Scalar, z / Scalar);
             return Result;
         }
+
+        static Vector3 Zero() {
+            return Vector3(0.0f, 0.0f, 0.0f);
+        }
+
+        static Vector3 One() {
+            return Vector3(1.0f, 1.0f, 1.0f);
+        }
     };
+
+    inline f32 Dot(const Vector3& A, const Vector3& B) {
+        f32 Result = A.x * B.x + A.y * B.y + A.z * B.z;
+        return Result;
+    }
 
     inline f32 Length(const Vector3& V) {
         f32 Len = V.x * V.x + V.y * V.y + V.z * V.z;
@@ -84,7 +97,7 @@ namespace Engine::Math {
 
     inline Vector3 Normalize(const Vector3& V) {
         f32 Len = Length(V);
-        if (Length > 0) {
+        if (Len > 0) {
             Vector3 Result;
             Result.x = V.x / Len;
             Result.y = V.y / Len;
@@ -92,6 +105,14 @@ namespace Engine::Math {
             return Result;
         }
         return Vector3{ 0.0f, 0.0f, 0.0f };    
+    }
+
+    inline Vector3 Cross(const Vector3& A, const Vector3& B) {
+        Vector3 Result;
+        Result.x = A.y * B.z - A.z * B.y;
+        Result.y = A.z * B.x - A.x * B.z;
+        Result.z = A.x * B.y - A.y * B.x;
+        return Result;
     }
 
 }
