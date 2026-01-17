@@ -96,4 +96,13 @@ namespace Engine::IO {
         }
     }
 
+    bool FileSystem::IsOpen(FileHandle* File) const {
+        return File != nullptr;
+    }
+
+    bool FileSystem::FileExists(const char* Filename) {
+        DWORD Attributes = GetFileAttributesA(Filename);
+        return (Attributes != INVALID_FILE_ATTRIBUTES && !(Attributes & FILE_ATTRIBUTE_DIRECTORY));
+    }
+
 }

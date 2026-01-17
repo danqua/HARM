@@ -1,7 +1,14 @@
 #pragma once
 
 #include "Engine/Core/Handle.h"
-#include "Engine/Memory/ArenaAllocator.h"
+
+namespace Engine::IO {
+    class FileSystem;
+}
+
+namespace Engine::Memory {
+    struct ArenaAllocator;
+}
 
 namespace Engine::World {
 
@@ -41,5 +48,21 @@ namespace Engine::World {
         s32 FloorHeight;
         s32 CeilingHeight;
     };
+
+    struct MapData {
+        MapLineSegment* LineSegments;
+        usize LineSegmentCount;
+
+        MapEdge* Edges;
+        usize EdgeCount;
+
+        MapSubsector* Subsectors;
+        usize SubsectorCount;
+
+        MapSector* Sectors;
+        usize SectorCount;
+    };
+
+    MapData* LoadMapFromFile(const char* Filename, IO::FileSystem& FileSystem, Memory::ArenaAllocator& TransientArena);
 
 }
