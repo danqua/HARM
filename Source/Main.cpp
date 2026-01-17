@@ -1,10 +1,13 @@
 #include <SDL3/SDL.h>
 
+#include "Engine/IO/FileSystem.h"
 #include "Engine/RenderCore/RenderDevice.h"
 #include "Engine/Renderer/RenderSystem.h"
+#include "Engine/Renderer/Camera.h"
 #include "Engine/Math/Math.h"
 
 #include "Engine/Memory/ArenaAllocator.h"
+#include "Engine/World/Level/MapData.h"
 
 int main(int ArgCount, char** ArgValues) {
     SDL_Init(SDL_INIT_VIDEO);
@@ -21,6 +24,12 @@ int main(int ArgCount, char** ArgValues) {
     void* MainMemory = malloc(Engine::Memory::Megabytes(16));
     Engine::Memory::ArenaAllocator MainArena = {};
     Engine::Memory::InitArena(MainArena, MainMemory, Engine::Memory::Megabytes(16));
+
+    void* TransientMemory = malloc(Engine::Memory::Megabytes(8));
+    Engine::Memory::ArenaAllocator TransientArena = {};
+    Engine::Memory::InitArena(TransientArena, TransientMemory, Engine::Memory::Megabytes(8));
+
+    Engine::IO::FileSystem FileSystem;
     
     // Initialize the render device
     Engine::RenderCore::RenderDeviceDesc RenderDeviceDesc = {};
@@ -59,28 +68,50 @@ int main(int ArgCount, char** ArgValues) {
     Engine::Renderer::MeshHandle Mesh = RenderSystem->CreateMesh(Vertices, 3, Indices, 3);
     Engine::Renderer::MaterialHandle Material = RenderSystem->CreateMaterial(Engine::Renderer::MaterialType::Opaque);
 
-    Engine::Math::Matrix4 ViewMatrix = Engine::Math::LookAt(
-        Engine::Math::Vector3(0.0f, 0.0f, 3.0f),
-        Engine::Math::Vector3(0.0f, 0.0f, 0.0f),
-        Engine::Math::Vector3(0.0f, 1.0f, 0.0f)
-    );
+    Engine::Renderer::Camera Camera;
+    Camera.SetPerspective(70.0f, 800.0f / 600.0f, 0.1f, 100.0f);
+    Camera.Position = Engine::Math::Vector3(0.0f, 0.0f, 3.0f);
 
-    Engine::Math::Matrix4 ProjectionMatrix = Engine::Math::Perspective(
-        Engine::Math::Radians(70.0f),
-        800.0f / 600.0f,
-        0.1f, 100.0f
-    );
+    Engine::World::MapData* Map = Engine::World::LoadMapFromFile("Maps/TestMap.map", FileSystem, TransientArena);
+
 
     bool Running = true;
     while (Running) {
+
+
         SDL_Event Event;
         while (SDL_PollEvent(&Event)) {
             if (Event.type == SDL_EVENT_QUIT) {
                 Running = false;
+            } else if (Event.type == SDL_EVENT_KEY_DOWN) {
+                if (Event.key.scancode == SDL_SCANCODE_W) {
+                    auto Direction = Camera.GetForwardVector();
+                    Camera.Position += Direction * 0.1f;
+                }
+                if (Event.key.scancode == SDL_SCANCODE_S) {
+                    auto Direction = Camera.GetForwardVector();
+                    Camera.Position -= Direction * 0.1f;
+                }
+                if (Event.key.scancode == SDL_SCANCODE_A) {
+                    auto Direction = Camera.GetRightVector();
+                    Camera.Position -= Direction * 0.1f;
+                }
+                if (Event.key.scancode == SDL_SCANCODE_D) {
+                    auto Direction = Camera.GetRightVector();
+                    Camera.Position += Direction * 0.1f;
+                }
+                if (Event.key.scancode == SDL_SCANCODE_LEFT) {
+                    Camera.Rotation.y -= 1.0f;
+                }
+                if (Event.key.scancode == SDL_SCANCODE_RIGHT) {
+                    Camera.Rotation.y += 1.0f;
+                }
             }
         }
 
-        Engine::Math::Matrix4 ModelMatrix = Engine::Math::Identity();
+        Engine::Math::Matrix4 ProjectionMatrix = Camera.GetProjectionMatrix();
+        Engine::Math::Matrix4 ViewMatrix = Camera.GetViewMatrix();
+        Engine::Math::Matrix4 ModelMatrix = Engine::Math::Matrix4::Identity();
 
         RenderSystem->BeginFrame(ViewMatrix, ProjectionMatrix);
         RenderSystem->Submit(Mesh, Material, ModelMatrix);
