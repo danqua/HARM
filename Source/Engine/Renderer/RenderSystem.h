@@ -24,17 +24,17 @@ namespace Hx {
     };
 
     struct Vertex {
-        Hx::Vector3 position;
-        Hx::Vector3 normal;
-        Hx::Vector2 texCoord;
+        Vector3 position;
+        Vector3 normal;
+        Vector2 texCoord;
     };
 
     class RenderSystem {
     public:
-        RenderSystem(Hx::RenderDevice* inDevice);
+        RenderSystem(RenderDevice* inDevice);
         ~RenderSystem();
 
-        void BeginFrame(const Hx::Matrix4& viewMatrix, const Hx::Matrix4& projectionMatrix);
+        void BeginFrame(const Matrix4& viewMatrix, const Matrix4& projectionMatrix);
         void EndFrame();
 
         MeshHandle CreateMesh(const Vertex* vertices, usize vertexCount, const u32* indices, usize indexCount);
@@ -43,7 +43,7 @@ namespace Hx {
         MaterialHandle CreateMaterial(MaterialType type);
         void DestroyMaterial(MaterialHandle material);
 
-        void Submit(MeshHandle mesh, MaterialHandle material, const Hx::Matrix4& transform);
+        void Submit(MeshHandle mesh, MaterialHandle material, const Matrix4& transform);
 
     private:
         

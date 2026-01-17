@@ -11,46 +11,46 @@ namespace Hx {
         f32 m[16];
 
         static inline Matrix4 Identity() {
-            Matrix4 Result = {};
-            Result.m[0] = 1.0f;
-            Result.m[5] = 1.0f;
-            Result.m[10] = 1.0f;
-            Result.m[15] = 1.0f;
-            return Result;
+            Matrix4 result = {};
+            result.m[0] = 1.0f;
+            result.m[5] = 1.0f;
+            result.m[10] = 1.0f;
+            result.m[15] = 1.0f;
+            return result;
         }
     };
 
-    inline Matrix4 Perspective(f32 Fov, f32 Aspect, f32 Near, f32 Far) {
+    inline Matrix4 Perspective(f32 fov, f32 aspect, f32 near, f32 far) {
         Matrix4 result = {};
-        f32 tanHalfFov = tanf(Fov / 2.0f);
+        f32 tanHalfFov = tanf(fov / 2.0f);
 
-        result.m[0] = 1.0f / (Aspect * tanHalfFov);
+        result.m[0] = 1.0f / (aspect * tanHalfFov);
         result.m[5] = 1.0f / (tanHalfFov);
-        result.m[10] = -(Far + Near) / (Far - Near);
+        result.m[10] = -(far + near) / (far - near);
         result.m[11] = -1.0f;
-        result.m[14] = -(2.0f * Far * Near) / (Far - Near);
+        result.m[14] = -(2.0f * far * near) / (far - near);
 
         return result;
     }
 
-    inline Matrix4 Orthographic(f32 Width, f32 Height, f32 Near, f32 Far) {
+    inline Matrix4 Orthographic(f32 width, f32 height, f32 near, f32 far) {
         Matrix4 result = {};
-        result.m[0] = 2.0f / Width;
-        result.m[5] = 2.0f / Height;
-        result.m[10] = -2.0f / (Far - Near);
+        result.m[0] = 2.0f / width;
+        result.m[5] = 2.0f / height;
+        result.m[10] = -2.0f / (far - near);
         result.m[12] = 0.0f;
         result.m[13] = 0.0f;
-        result.m[14] = -(Far + Near) / (Far - Near);
+        result.m[14] = -(far + near) / (far - near);
         result.m[15] = 1.0f;
         return result;
     }
 
-    inline Matrix4 LookAt(const Vector3& Eye, const Vector3& Center, const Vector3& Up) {
-        Vector3 f = Normalize(Center - Eye);
+    inline Matrix4 LookAt(const Vector3& eye, const Vector3& center, const Vector3& up) {
+        Vector3 f = Normalize(center - eye);
         Vector3 s = Normalize(Vector3(
-            f.y * Up.z - f.z * Up.y,
-            f.z * Up.x - f.x * Up.z,
-            f.x * Up.y - f.y * Up.x));
+            f.y * up.z - f.z * up.y,
+            f.z * up.x - f.x * up.z,
+            f.x * up.y - f.y * up.x));
         Vector3 u = Vector3(
             s.y * f.z - s.z * f.y,
             s.z * f.x - s.x * f.z,
@@ -67,42 +67,42 @@ namespace Hx {
         result.m[6] = -f.y;
         result.m[10] = -f.z;
         result.m[15] = 1.0f;
-        result.m[12] = -Dot(s, Eye);
-        result.m[13] = -Dot(u, Eye);
-        result.m[14] = Dot(f, Eye);
+        result.m[12] = -Dot(s, eye);
+        result.m[13] = -Dot(u, eye);
+        result.m[14] = Dot(f, eye);
 
         return result;
     }
 
-    inline Matrix4 Translate(const Vector3& Translation) {
+    inline Matrix4 Translate(const Vector3& translation) {
         Matrix4 result = Matrix4::Identity();
-        result.m[12] = Translation.x;
-        result.m[13] = Translation.y;
-        result.m[14] = Translation.z;
+        result.m[12] = translation.x;
+        result.m[13] = translation.y;
+        result.m[14] = translation.z;
         return result;
     }
 
-    inline Matrix4 Translate(const Matrix4& M, const Vector3& Translation) {
-        Matrix4 result = M;
-        result.m[12] += Translation.x;
-        result.m[13] += Translation.y;
-        result.m[14] += Translation.z;
+    inline Matrix4 Translate(const Matrix4& m, const Vector3& translation) {
+        Matrix4 result = m;
+        result.m[12] += translation.x;
+        result.m[13] += translation.y;
+        result.m[14] += translation.z;
         return result;
     }
 
-    inline Matrix4 Scale(const Vector3& Scaling) {
+    inline Matrix4 Scale(const Vector3& scaling) {
         Matrix4 result = Matrix4::Identity();
-        result.m[0] = Scaling.x;
-        result.m[5] = Scaling.y;
-        result.m[10] = Scaling.z;
+        result.m[0] = scaling.x;
+        result.m[5] = scaling.y;
+        result.m[10] = scaling.z;
         return result;
     }
 
-    inline Matrix4 Scaler(const Matrix4& M, const Vector3& Scaling) {
-        Matrix4 result = M;
-        result.m[0] *= Scaling.x;
-        result.m[5] *= Scaling.y;
-        result.m[10] *= Scaling.z;
+    inline Matrix4 Scaler(const Matrix4& m, const Vector3& scaling) {
+        Matrix4 result = m;
+        result.m[0] *= scaling.x;
+        result.m[5] *= scaling.y;
+        result.m[10] *= scaling.z;
         return result;
     }
 

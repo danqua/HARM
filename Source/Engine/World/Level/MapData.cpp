@@ -5,14 +5,14 @@
 namespace Hx {
 
     template <typename T>
-    inline void ReadLumpData(Hx::FileHandle* file, const LumpHeader& lump, T*& outData, usize& outCount, Hx::ArenaAllocator& arena) {
+    inline void ReadLumpData(FileHandle* file, const LumpHeader& lump, T*& outData, usize& outCount, ArenaAllocator& arena) {
         outCount = lump.length / sizeof(T);
-        outData = Hx::AllocArray<T>(&arena.base, outCount);
+        outData = AllocArray<T>(&arena.base, outCount);
         file->ReadAt(outData, lump.length, lump.offset);
     }
 
-    MapData* LoadMapFromFile(const char* filename, Hx::FileSystem& fileSystem, Hx::ArenaAllocator& transientArena) {
-        Hx::FileHandle* file = fileSystem.OpenFileRead(filename);
+    MapData* LoadMapFromFile(const char* filename, FileSystem& fileSystem, ArenaAllocator& transientArena) {
+        FileHandle* file = fileSystem.OpenFileRead(filename);
         if (!file) {
             return nullptr;
         }
@@ -23,7 +23,7 @@ namespace Hx {
             return nullptr;
         }
 
-        MapData* map = Hx::AllocOne<MapData>(&transientArena.base, Hx::AllocFlags::ZeroInit);
+        MapData* map = AllocOne<MapData>(&transientArena.base, AllocFlags::ZeroInit);
 
         ReadLumpData(file, header.lineSegsLump, map->lineSegments, map->lineSegmentCount, transientArena);
         ReadLumpData(file, header.edgesLump, map->edges, map->edgeCount, transientArena);

@@ -63,6 +63,6 @@ namespace Hx {
         usize sectorCount;
     };
 
-    MapData* LoadMapFromFile(const char* filename, Hx::FileSystem& fileSystem, Hx::ArenaAllocator& transientArena);
+    MapData* LoadMapFromFile(const char* filename, FileSystem& fileSystem, ArenaAllocator& transientArena);
 
 }

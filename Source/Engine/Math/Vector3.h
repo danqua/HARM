@@ -16,24 +16,24 @@ namespace Hx {
 
         Vector3(f32 scalar) : x(scalar), y(scalar), z(scalar) {}
 
-        Vector3(const Vector3& V) : x(V.x), y(V.y), z(V.z) {}
+        Vector3(const Vector3& v) : x(v.x), y(v.y), z(v.z) {}
 
-        bool operator==(const Vector3& V) const {
-            bool Result = (x == V.x) && (y == V.y) && (z == V.z);
-            return Result;
+        bool operator==(const Vector3& v) const {
+            bool result = (x == v.x) && (y == v.y) && (z == v.z);
+            return result;
         }
 
-        Vector3& operator+=(const Vector3& V) {
-            x += V.x;
-            y += V.y;
-            z += V.z;
+        Vector3& operator+=(const Vector3& v) {
+            x += v.x;
+            y += v.y;
+            z += v.z;
             return *this;
         }
 
-        Vector3& operator-=(const Vector3& V) {
-            x -= V.x;
-            y -= V.y;
-            z -= V.z;
+        Vector3& operator-=(const Vector3& v) {
+            x -= v.x;
+            y -= v.y;
+            z -= v.z;
             return *this;
         }
 
@@ -55,13 +55,13 @@ namespace Hx {
             return Vector3(-x, -y, -z);
         }
 
-        Vector3 operator+(const Vector3& V) const {
-            Vector3 result(x + V.x, y + V.y, z + V.z);
+        Vector3 operator+(const Vector3& v) const {
+            Vector3 result(x + v.x, y + v.y, z + v.z);
             return result;
         }
 
-        Vector3 operator-(const Vector3& V) const {
-            Vector3 result(x - V.x, y - V.y, z - V.z);
+        Vector3 operator-(const Vector3& v) const {
+            Vector3 result(x - v.x, y - v.y, z - v.z);
             return result;
         }
 
@@ -84,34 +84,34 @@ namespace Hx {
         }
     };
 
-    inline f32 Dot(const Vector3& A, const Vector3& B) {
-        f32 result = A.x * B.x + A.y * B.y + A.z * B.z;
+    inline f32 Dot(const Vector3& a, const Vector3& b) {
+        f32 result = a.x * b.x + a.y * b.y + a.z * b.z;
         return result;
     }
 
-    inline f32 Length(const Vector3& V) {
-        f32 len = V.x * V.x + V.y * V.y + V.z * V.z;
+    inline f32 Length(const Vector3& v) {
+        f32 len = v.x * v.x + v.y * v.y + v.z * v.z;
         f32 result = sqrtf(len);
         return result;
     }
 
-    inline Vector3 Normalize(const Vector3& V) {
-        f32 len = Length(V);
+    inline Vector3 Normalize(const Vector3& v) {
+        f32 len = Length(v);
         if (len > 0) {
             Vector3 result;
-            result.x = V.x / len;
-            result.y = V.y / len;
-            result.z = V.z / len;
+            result.x = v.x / len;
+            result.y = v.y / len;
+            result.z = v.z / len;
             return result;
         }
         return Vector3{ 0.0f, 0.0f, 0.0f };    
     }
 
-    inline Vector3 Cross(const Vector3& A, const Vector3& B) {
+    inline Vector3 Cross(const Vector3& a, const Vector3& b) {
         Vector3 result;
-        result.x = A.y * B.z - A.z * B.y;
-        result.y = A.z * B.x - A.x * B.z;
-        result.z = A.x * B.y - A.y * B.x;
+        result.x = a.y * b.z - a.z * b.y;
+        result.y = a.z * b.x - a.x * b.z;
+        result.z = a.x * b.y - a.y * b.x;
         return result;
     }
 

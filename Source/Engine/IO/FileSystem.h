@@ -13,12 +13,12 @@ namespace Hx {
 
     class FileHandle {
     public:
-        virtual bool Read(void* Dst, usize BytesToRead) = 0;
-        virtual bool ReadAt(void* Dst, usize BytesToRead, usize Offset) = 0;
+        virtual bool Read(void* dst, usize bytesToRead) = 0;
+        virtual bool ReadAt(void* dst, usize bytesToRead, usize offset) = 0;
 
-        virtual bool Write(const void* Src, usize BytesToWrite) = 0;
+        virtual bool Write(const void* src, usize bytesToWrite) = 0;
 
-        virtual void Seek(usize Position, FileSeek SeekMode) = 0;
+        virtual void Seek(usize position, FileSeek seekMode) = 0;
         virtual usize Tell() const = 0;
 
         virtual usize GetSize() const = 0;
@@ -26,12 +26,12 @@ namespace Hx {
 
     class FileSystem {
     public:
-        FileHandle* OpenFileRead(const char* Filename);
-        FileHandle* OpenFileWrite(const char* Filename);
-        void CloseFile(FileHandle* File);
+        FileHandle* OpenFileRead(const char* filename);
+        FileHandle* OpenFileWrite(const char* filename);
+        void CloseFile(FileHandle* file);
 
-        bool IsOpen(FileHandle* File) const;
-        bool FileExists(const char* Filename);
+        bool IsOpen(FileHandle* file) const;
+        bool FileExists(const char* filename);
     };
 
 }

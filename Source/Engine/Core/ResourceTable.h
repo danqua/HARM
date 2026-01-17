@@ -13,71 +13,71 @@ namespace Hx {
 
         ResourceTable() = default;
 
-        void Reserve(u32 Capacity) {
+        void Reserve(u32 capacity) {
             // Index 0 is reserved, so we start from 1
-            Records.reserve(Capacity + 1);
-            Generations.reserve(Capacity + 1);
+            records.reserve(capacity + 1);
+            generations.reserve(capacity + 1);
         }
 
         template<typename InitFn>
-        Handle<Tag> Create(InitFn&& Init) {
-            u32 Index = 0;
-            if (!FreeIndices.empty()) {
-                Index = FreeIndices.back();
-                FreeIndices.pop_back();
+        Handle<Tag> Create(InitFn&& initFn) {
+            u32 index = 0;
+            if (!freeIndices.empty()) {
+                index = freeIndices.back();
+                freeIndices.pop_back();
             } else {
-                Index = static_cast<u32>(Records.size());
-                if (Index == 0) {
-                    Index = 1;
+                index = static_cast<u32>(records.size());
+                if (index == 0) {
+                    index = 1;
                     // Add a dummy record at index 0
-                    Records.emplace_back();
-                    Generations.emplace_back(0);
+                    records.emplace_back();
+                    generations.emplace_back(0);
                 }
 
-                Records.emplace_back();
-                Generations.emplace_back(1);
+                records.emplace_back();
+                generations.emplace_back(1);
             }
 
-            Init(Records[Index]);
+            initFn(records[index]);
 
-            return Handle<Tag>{ Index, Generations[Index] };
+            return Handle<Tag>{ index, generations[index] };
         }
 
-        bool IsValid(Handle<Tag> H) const {
-            if (H.Index == 0) return false;
-            if (H.Index >= Generations.size()) return false;
-            return Generations[H.Index] == H.Gen;
+        bool IsValid(Handle<Tag> h) const {
+            if (h.index == 0) return false;
+            if (h.index >= generations.size()) return false;
+            return generations[h.index] == h.gen;
         }
 
-        Record* TryGet(Handle<Tag> H) {
-            return IsValid(H) ? &Records[H.Index] : nullptr;
+        Record* TryGet(Handle<Tag> h) {
+            return IsValid(h) ? &records[h.index] : nullptr;
         }
 
-        const Record* TryGet(Handle<Tag> H) const {
-            return IsValid(H) ? &Records[H.Index] : nullptr;
+        const Record* TryGet(Handle<Tag> h) const {
+            return IsValid(h) ? &records[h.index] : nullptr;
         }
 
         template <typename DestroyFn>
-        bool Destroy(Handle<Tag> H, DestroyFn&& DestroyRecord) {
-            if (!IsValid(H)) return false;
+        bool Destroy(Handle<Tag> h, DestroyFn&& destroyRecord) {
+            if (!IsValid(h)) return false;
 
-            Record& R = Records[H.Index];
-            DestroyRecord(R);
+            Record& r = records[h.index];
+            destroyRecord(r);
 
             // Invalidate all existing handles
-            ++Generations[H.Index];
+            ++generations[h.index];
 
             // Recycle slot
-            FreeIndices.push_back(H.Index);
+            freeIndices.push_back(h.index);
 
             return true;
         }
 
     private:
 
-        std::vector<Record> Records;
-        std::vector<u32>    Generations;
-        std::vector<u32>    FreeIndices;
+        std::vector<Record> records;
+        std::vector<u32>    generations;
+        std::vector<u32>    freeIndices;
     };
 
 }

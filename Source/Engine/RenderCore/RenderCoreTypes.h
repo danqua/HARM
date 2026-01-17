@@ -153,7 +153,7 @@ namespace Hx {
         FramebufferHandle framebuffer;
         bool clearColor;
         bool clearDepth;
-        Hx::Vector4 clearColorValue; // TODO: I should implement some color type
+        Vector4 clearColorValue; // TODO: I should implement some color type
         float clearDepthValue;
     };
 
