@@ -4,73 +4,73 @@
 #include <cassert>
 #include <cstring>
 
-namespace Engine::Memory {
+namespace Hx {
 
     struct ArenaAllocator {
-        Allocator Base;
-        void*     Begin;
-        void*     End;
-        void*     Current;
-    };
+        Allocator base;
+        void*     begin;
+        void*     end;
+        void*     current;
+    };;
 
-    inline uintptr_t AlignForward(uintptr_t Ptr, usize Alignment) {
-        const uintptr_t Mask = Alignment - 1;
-        return (Ptr + Mask) & ~Mask;
+    inline uintptr_t AlignForward(uintptr_t ptr, usize alignment) {
+        const uintptr_t mask = alignment - 1;
+        return (ptr + mask) & ~mask;
     }
 
-    inline void* ArenaAlloc(Allocator* Self, usize Size, usize Alignment, AllocFlags Flags) {
-        ArenaAllocator* Arena = static_cast<ArenaAllocator*>(Self->UserData);
-        assert(Arena);
+    inline void* ArenaAlloc(Allocator* self, usize size, usize alignment, AllocFlags flags) {
+        ArenaAllocator* arena = static_cast<ArenaAllocator*>(self->userData);
+        assert(arena);
 
-        uintptr_t CurrentAddress = reinterpret_cast<uintptr_t>(Arena->Current);
-        uintptr_t AlignedAddress = AlignForward(CurrentAddress, Alignment);
-        uintptr_t NewAddress = AlignedAddress + Size;
+        uintptr_t currentAddress = reinterpret_cast<uintptr_t>(arena->current);
+        uintptr_t alignedAddress = AlignForward(currentAddress, alignment);
+        uintptr_t newAddress = alignedAddress + size;
 
-        if (NewAddress > reinterpret_cast<uintptr_t>(Arena->End)) {
-            if (HasFlag(Flags, AllocFlags::NoFail)) {
+        if (newAddress > reinterpret_cast<uintptr_t>(arena->end)) {
+            if (HasFlag(flags, AllocFlags::NoFail)) {
                 assert(false && "ArenaAllocator is out of memory!");
             }
 
             return nullptr;
         }
 
-        Arena->Current = reinterpret_cast<void*>(NewAddress);
-        void* Result = reinterpret_cast<void*>(AlignedAddress);
+        arena->current = reinterpret_cast<void*>(newAddress);
+        void* result = reinterpret_cast<void*>(alignedAddress);
 
-        if (HasFlag(Flags, AllocFlags::ZeroInit)) {
-            std::memset(Result, 0, Size);
+        if (HasFlag(flags, AllocFlags::ZeroInit)) {
+            std::memset(result, 0, size);
         }
 
         // Update stats
-        Self->Stats.BytesInUse = reinterpret_cast<u64>(Arena->Current) - reinterpret_cast<u64>(Arena->Begin);
-        Self->Stats.TotalAllocations++;
+        self->stats.BytesInUse = reinterpret_cast<u64>(arena->current) - reinterpret_cast<u64>(arena->begin);
+        self->stats.TotalAllocations++;
 
-        return Result;
+        return result;
     }
 
-    inline void ArenaFree(Allocator* Self, void* Ptr, usize Size, usize Alignment) {
+    inline void ArenaFree(Allocator* self, void* ptr, usize size, usize alignment) {
         // Arenas do not support freeing individual allocations.
         // Memory is freed when the arena is reset or destroyed.
-        (void)Self;
-        (void)Ptr;
-        (void)Size;
-        (void)Alignment;
+        (void)self;
+        (void)ptr;
+        (void)size;
+        (void)alignment;
     }
 
-    inline void InitArena(ArenaAllocator& Arena, void* Memory, usize Size) {
-        Arena.Begin = Memory;
-        Arena.End = static_cast<void*>(static_cast<u8*>(Memory) + Size);
-        Arena.Current = Arena.Begin;
+    inline void InitArena(ArenaAllocator& arena, void* memory, usize size) {
+        arena.begin = memory;
+        arena.end = static_cast<void*>(static_cast<u8*>(memory) + size);
+        arena.current = arena.begin;
 
-        Arena.Base.Alloc = ArenaAlloc;
-        Arena.Base.Free = ArenaFree;
-        Arena.Base.Realloc = nullptr;
-        Arena.Base.Stats = AllocStats();
-        Arena.Base.UserData = &Arena;
+        arena.base.alloc = ArenaAlloc;
+        arena.base.free = ArenaFree;
+        arena.base.realloc = nullptr;
+        arena.base.stats = AllocStats();
+        arena.base.userData = &arena;
      }
 
-    inline void ResetArena(ArenaAllocator& Arena) {
-        Arena.Current = Arena.Begin;
-        Arena.Base.Stats.BytesInUse = 0;
+    inline void ResetArena(ArenaAllocator& arena) {
+        arena.current = arena.begin;
+        arena.base.stats.BytesInUse = 0;
     }
 }

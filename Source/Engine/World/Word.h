@@ -2,7 +2,7 @@
 
 #include "Engine/Core/Handle.h"
 
-namespace Engine::World {
+namespace Hx {
 
     struct EntityTag {};
 

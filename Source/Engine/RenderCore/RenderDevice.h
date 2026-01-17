@@ -2,29 +2,29 @@
 
 #include "Engine/RenderCore/RenderCoreTypes.h"
 
-namespace Engine::RenderCore {
+namespace Hx {
 
     class RenderDevice {
     public:
-        explicit RenderDevice(const RenderDeviceDesc& Desc);
+        explicit RenderDevice(const RenderDeviceDesc& desc);
         ~RenderDevice();
 
         RenderDevice(const RenderDevice&) = delete;
         RenderDevice& operator=(const RenderDevice&) = delete;
 
         // Buffer methods
-        BufferHandle CreateBuffer(const BufferDesc& Desc);
+        BufferHandle CreateBuffer(const BufferDesc& desc);
         void DestroyBuffer(BufferHandle Buffer);
         void BindBuffer(BufferHandle Buffer);
         void BindVertexBuffer(BufferHandle Buffer, u32 BindingIndex, usize Offset, usize Stride);
         void UpdateBuffer(BufferHandle Buffer, const void* Data, usize SizeInBytes, usize Offset = 0);
     
         // Shader methods
-        ShaderHandle CreateShader(const ShaderDesc& Desc);
+        ShaderHandle CreateShader(const ShaderDesc& desc);
         void DestroyShader(ShaderHandle Shader);
 
         // Program methods
-        ProgramHandle CreateProgram(const ProgramDesc& Desc);
+        ProgramHandle CreateProgram(const ProgramDesc& desc);
         void DestroyProgram(ProgramHandle Program);
         void BindProgram(ProgramHandle Program);
         void SetUniformInt(ProgramHandle Program, const char* Name, int Value);
@@ -35,26 +35,26 @@ namespace Engine::RenderCore {
         void SetUniformMat4(ProgramHandle Program, const char* Name, const float* Value);
 
         // Texture methods
-        TextureHandle CreateTexture(const TextureDesc& Desc);
+        TextureHandle CreateTexture(const TextureDesc& desc);
         void DestroyTexture(TextureHandle Texture);
         void BindTexture(TextureHandle Texture, u32 Slot = 0);
         void UpdateTexture(TextureHandle Texture, const void* Data);
 
         // Vertex layout methods
-        VertexLayoutHandle CreateVertexLayout(const VertexLayoutDesc& Desc);
+        VertexLayoutHandle CreateVertexLayout(const VertexLayoutDesc& desc);
         void DestroyVertexLayout(VertexLayoutHandle Layout);
 
         // Pipeline methods
-        PipelineHandle CreatePipeline(const PipelineDesc& Desc);
+        PipelineHandle CreatePipeline(const PipelineDesc& desc);
         void DestroyPipeline(PipelineHandle Pipeline);
         void BindPipeline(PipelineHandle Pipeline);
 
         // Framebuffer methods
-        FramebufferHandle CreateFramebuffer(const FramebufferDesc& Desc);
+        FramebufferHandle CreateFramebuffer(const FramebufferDesc& desc);
         void DestroyFramebuffer(FramebufferHandle Framebuffer);
 
         // Render pass methods
-        void BeginRenderPass(const RenderPassDesc& Desc);
+        void BeginRenderPass(const RenderPassDesc& desc);
         void EndRenderPass();
 
         // Draw methods

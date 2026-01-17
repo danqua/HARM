@@ -2,7 +2,7 @@
 
 #include "Engine/Core/Types.h"
 
-namespace Engine {
+namespace Hx {
 
     template <typename Tag>
     struct Handle {

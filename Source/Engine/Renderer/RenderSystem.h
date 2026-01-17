@@ -7,7 +7,7 @@
 
 #include <vector>
 
-namespace Engine::Renderer {
+namespace Hx {
 
     struct MeshTag {};
     struct StaticMeshTag {};
@@ -24,26 +24,26 @@ namespace Engine::Renderer {
     };
 
     struct Vertex {
-        Math::Vector3 Position;
-        Math::Vector3 Normal;
-        Math::Vector2 TexCoord;
+        Hx::Vector3 position;
+        Hx::Vector3 normal;
+        Hx::Vector2 texCoord;
     };
 
     class RenderSystem {
     public:
-        RenderSystem(RenderCore::RenderDevice* InDevice);
+        RenderSystem(Hx::RenderDevice* inDevice);
         ~RenderSystem();
 
-        void BeginFrame(const Math::Matrix4& ViewMatrix, const Math::Matrix4& ProjectionMatrix);
+        void BeginFrame(const Hx::Matrix4& viewMatrix, const Hx::Matrix4& projectionMatrix);
         void EndFrame();
 
-        MeshHandle CreateMesh(const Vertex* Vertices, usize VertexCount, const u32* Indices, usize IndexCount);
-        void DestroyMesh(MeshHandle Mesh);
+        MeshHandle CreateMesh(const Vertex* vertices, usize vertexCount, const u32* indices, usize indexCount);
+        void DestroyMesh(MeshHandle mesh);
 
-        MaterialHandle CreateMaterial(MaterialType Type);
-        void DestroyMaterial(MaterialHandle Material);
+        MaterialHandle CreateMaterial(MaterialType type);
+        void DestroyMaterial(MaterialHandle material);
 
-        void Submit(MeshHandle Mesh, MaterialHandle Material, const Math::Matrix4& Transform);
+        void Submit(MeshHandle mesh, MaterialHandle material, const Hx::Matrix4& transform);
 
     private:
         

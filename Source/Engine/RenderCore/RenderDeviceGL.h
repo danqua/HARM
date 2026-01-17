@@ -3,7 +3,7 @@
 #include "Engine/Core/ResourceTable.h"
 #include "Engine/RenderCore/RenderDevice.h"
 
-namespace Engine::RenderCore {
+namespace Hx {
 
     constexpr usize MaxBuffers       = 128;
     constexpr usize MaxShaders       = 64;
@@ -14,69 +14,69 @@ namespace Engine::RenderCore {
     constexpr usize MaxFramebuffers  = 16;
 
     struct GLBuffer {
-        u32 Id;
-        BufferType Type;
-        BufferUsage Usage;
-        usize SizeInBytes;
+        u32 id;
+        BufferType type;
+        BufferUsage usage;
+        usize sizeInBytes;
     };
 
     struct GLShader {
-        u32 Id;
+        u32 id;
     };
 
     struct GLProgram {
-        u32 Id;
+        u32 id;
     };
 
     struct GLTexture {
-        u32 Id;
-        u32 Width;
-        u32 Height;
-        TextureFormat Format;
+        u32 id;
+        u32 width;
+        u32 height;
+        TextureFormat format;
     };
 
     struct VertexLayout {
-        u32 Vao;
+        u32 vao;
     };
 
     struct GLPipeline {
-        ProgramHandle Program;
-        PrimitiveTopology Topology;
-        VertexLayoutHandle VertexLayout;
+        ProgramHandle program;
+        PrimitiveTopology topology;
+        VertexLayoutHandle vertexLayout;
 
-        bool DepthTest;
-        bool DepthWrite;
-        CompareOp DepthCompare;
+        bool depthTest;
+        bool depthWrite;
+        CompareOp depthCompare;
 
-        FrontFace Front;
-        CullMode Cull;
+        FrontFace front;
+        CullMode cull;
 
-        bool Wireframe;
+        bool wireframe;
     };
 
     struct GLFramebuffer {
-        u32 Id;
-        u32 Width;
-        u32 Height;
-        TextureHandle ColorAttachments[4];
-        u32 ColorAttachmentCount;
-        TextureHandle DepthAttachment;
+        u32 id;
+        u32 width;
+        u32 height;
+        TextureHandle colorAttachments[4];
+        u32 colorAttachmentCount;
+        TextureHandle depthAttachment;
     };
 
     struct RenderDeviceImpl {
-        ResourceTable<BufferTag, GLBuffer> Buffers;
-        ResourceTable<ShaderTag, GLShader> Shaders;
-        ResourceTable<ProgramTag, GLProgram> Programs;
-        ResourceTable<TextureTag, GLTexture> Textures;
-        ResourceTable<VertexLayoutTag, VertexLayout> VertexLayouts;
-        ResourceTable<PipelineTag, GLPipeline> Pipelines;
-        ResourceTable<FramebufferTag, GLFramebuffer> Framebuffers;
+        ResourceTable<BufferTag, GLBuffer> buffers;
+        ResourceTable<ShaderTag, GLShader> shaders;
+        ResourceTable<ProgramTag, GLProgram> programs;
+        ResourceTable<TextureTag, GLTexture> textures;
+        ResourceTable<VertexLayoutTag, VertexLayout> vertexLayouts;
+        ResourceTable<PipelineTag, GLPipeline> pipelines;
+        ResourceTable<FramebufferTag, GLFramebuffer> framebuffers;
 
-        PrimitiveTopology CurrentTopology = PrimitiveTopology::Triangles;
-        u32 CurrentProgram = 0;
+        PrimitiveTopology currentTopology = PrimitiveTopology::Triangles;
+        u32 currentProgram = 0;
 
-        u32 DefaultFramebufferWidth = 800;
-        u32 DefaultFramebufferHeight = 600;
+        u32 defaultFramebufferWidth = 800;
+        u32 defaultFramebufferHeight = 600;
     };
 
 }

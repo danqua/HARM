@@ -1,58 +1,58 @@
 #include "Engine/Renderer/Camera.h"
 
-namespace Engine::Renderer {
+namespace Hx {
     
     Camera::Camera() {
-        Position = Math::Vector3(0.0f, 0.0f, 0.0f);
-        Rotation = Math::Vector3(0.0f, 0.0f, 0.0f);
-        ProjectionMatrix = Math::Matrix4::Identity();
+        position = Hx::Vector3(0.0f, 0.0f, 0.0f);
+        rotation = Hx::Vector3(0.0f, 0.0f, 0.0f);
+        projectionMatrix = Hx::Matrix4::Identity();
     }
 
     Camera::~Camera() {
     }
 
     void Camera::SetPerspective(f32 Fov, f32 AspectRatio, f32 NearPlane, f32 FarPlane) {
-        ProjectionMatrix = Math::Perspective(Math::Radians(Fov), AspectRatio, NearPlane, FarPlane);
+        projectionMatrix = Hx::Perspective(Hx::Radians(Fov), AspectRatio, NearPlane, FarPlane);
     }
 
     void Camera::SetOrthographic(f32 Width, f32 Height, f32 NearPlane, f32 FarPlane) {
-        ProjectionMatrix = Math::Orthographic(Width, Height, NearPlane, FarPlane);
+        projectionMatrix = Hx::Orthographic(Width, Height, NearPlane, FarPlane);
     }
 
-    const Math::Matrix4& Camera::GetProjectionMatrix() const {
-        return ProjectionMatrix;
+    const Hx::Matrix4& Camera::GetProjectionMatrix() const {
+        return projectionMatrix;
     }
 
-    Math::Matrix4 Camera::GetViewMatrix() const {
-        Math::Vector3 Forward = GetForwardVector();
-        Math::Vector3 WorldUp = Math::Vector3(0.0f, 1.0f, 0.0f);
-        Math::Vector3 Target = Position + Forward;
-        return Math::LookAt(Position, Target, WorldUp);
+    Hx::Matrix4 Camera::GetViewMatrix() const {
+        Hx::Vector3 forward = GetForwardVector();
+        Hx::Vector3 worldUp = Hx::Vector3(0.0f, 1.0f, 0.0f);
+        Hx::Vector3 target = position + forward;
+        return Hx::LookAt(position, target, worldUp);
     }
 
-    Math::Vector3 Camera::GetForwardVector() const {
-        f32 Pitch = Math::Radians(Rotation.x);
-        f32 Yaw = Math::Radians(Rotation.y);
+    Hx::Vector3 Camera::GetForwardVector() const {
+        f32 pitch = Hx::Radians(rotation.x);
+        f32 yaw = Hx::Radians(rotation.y);
 
-        Math::Vector3 Forward;
-        Forward.x = Math::Cos(Pitch) * Math::Sin(Yaw);
-        Forward.y = Math::Sin(Pitch);
-        Forward.z = -Math::Cos(Pitch) * Math::Cos(Yaw);
-        return Math::Normalize(Forward);
+        Hx::Vector3 forward;
+        forward.x = Hx::Cos(pitch) * Hx::Sin(yaw);
+        forward.y = Hx::Sin(pitch);
+        forward.z = -Hx::Cos(pitch) * Hx::Cos(yaw);
+        return Hx::Normalize(forward);
     }
 
-    Math::Vector3 Camera::GetRightVector() const {
-        Math::Vector3 Forward = GetForwardVector();
-        Math::Vector3 WorldUp = Math::Vector3(0.0f, 1.0f, 0.0f);
-        Math::Vector3 Right = Math::Cross(Forward, WorldUp);
-        return Math::Normalize(Right);
+    Hx::Vector3 Camera::GetRightVector() const {
+        Hx::Vector3 forward = GetForwardVector();
+        Hx::Vector3 worldUp = Hx::Vector3(0.0f, 1.0f, 0.0f);
+        Hx::Vector3 right = Hx::Cross(forward, worldUp);
+        return Hx::Normalize(right);
     }
 
-    Math::Vector3 Camera::GetUpVector() const {
-        Math::Vector3 Forward = GetForwardVector();
-        Math::Vector3 Right = GetRightVector();
-        Math::Vector3 Up = Math::Cross(Right, Forward);
-        return Math::Normalize(Up);
+    Hx::Vector3 Camera::GetUpVector() const {
+        Hx::Vector3 forward = GetForwardVector();
+        Hx::Vector3 right = GetRightVector();
+        Hx::Vector3 up = Hx::Cross(right, forward);
+        return Hx::Normalize(up);
     }
 
 }

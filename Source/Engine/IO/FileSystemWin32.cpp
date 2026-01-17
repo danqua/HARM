@@ -1,7 +1,7 @@
 #include "Engine/IO/FileSystem.h"
 #include <Windows.h>
 
-namespace Engine::IO {
+namespace Hx {
 
     class FileHandleWin32 final : public FileHandle {
     public:

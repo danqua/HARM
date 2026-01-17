@@ -4,17 +4,12 @@
 #include "Engine/Memory/ArenaAllocator.h"
 #include "Engine/Math/Math.h"
 
-namespace Engine {
+namespace Hx {
 
     struct Context {
-        Memory::ArenaAllocator* MainArena;
-        Memory::ArenaAllocator* TransientArena;
-        IO::FileSystem* FileSystem;
+        ArenaAllocator* mainArena;
+        ArenaAllocator* transientArena;
+        FileSystem* fileSystem;
     };
-    
-    using Vec2 = Math::Vector2;
-    using Vec3 = Math::Vector3;
-    using Vec4 = Math::Vector4;
-    using Mat4 = Math::Matrix4;
 
 }

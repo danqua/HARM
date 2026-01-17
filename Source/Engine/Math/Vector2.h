@@ -2,7 +2,7 @@
 
 #include "Engine/Core/Types.h"
 
-namespace Engine::Math {
+namespace Hx {
 
     struct Vector2 {
         f32 x;

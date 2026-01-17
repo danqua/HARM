@@ -15,210 +15,207 @@
 
 #include <windows.h>
 
-typedef void(*GameInitFn)(Engine::Context* Context);
+typedef void(*GameInitFn)(Hx::Context* context);
 typedef void(*GameShutdownFn)();
-typedef void(*GameTickFn)(float DeltaTime);
-
-using Engine::f32;
-using Engine::Math::Vector3;
+typedef void(*GameTickFn)(float deltaTime);
 
 class CameraController {
 public:
-    CameraController(Engine::Renderer::Camera* InCamera);
+    CameraController(Hx::Camera* inCamera);
 
-    void Tick(f32 DeltaTime);
+    void Tick(f32 deltaTime);
 
 private:
-    Engine::Renderer::Camera* Camera;
-    Vector3 Velocity;
-    f32 MouseSensitivity;
-    f32 Friction;
-    f32 Speed;
+    Hx::Camera* camera;
+    Hx::Vector3 velocity;
+    f32 mouseSensitivity;
+    f32 friction;
+    f32 speed;
 };
 
-CameraController::CameraController(Engine::Renderer::Camera* InCamera) {
-    Camera = InCamera;
-    Velocity = Vector3::Zero();
-    MouseSensitivity = 0.1f;
-    Friction = 0.9f;
-    Speed = 32.0f;
+CameraController::CameraController(Hx::Camera* inCamera) {
+    camera = inCamera;
+    velocity = Hx::Vector3::Zero();
+    mouseSensitivity = 0.1f;
+    friction = 0.9f;
+    speed = 32.0f;
 }
 
-void CameraController::Tick(f32 DeltaTime) {
-    Vector3 CamForward = Camera->GetForwardVector();
-    Vector3 CamRight = Camera->GetRightVector();
+void CameraController::Tick(f32 deltaTime) {
+    Hx::Vector3 camForward = camera->GetForwardVector();
+    Hx::Vector3 camRight = camera->GetRightVector();
 
-    const bool* Keyboard = SDL_GetKeyboardState(NULL);
+    const bool* keyboard = SDL_GetKeyboardState(NULL);
 
-    if (Keyboard[SDL_SCANCODE_A]) {
-        Velocity -= CamRight * Speed * DeltaTime;
+    if (keyboard[SDL_SCANCODE_A]) {
+        velocity -= camRight * speed * deltaTime;
     }
 
-    if (Keyboard[SDL_SCANCODE_D]) {
-        Velocity += CamRight * Speed * DeltaTime;
+    if (keyboard[SDL_SCANCODE_D]) {
+        velocity += camRight * speed * deltaTime;
     }
 
-    if (Keyboard[SDL_SCANCODE_W]) {
-        Velocity += CamForward * Speed * DeltaTime;
+    if (keyboard[SDL_SCANCODE_W]) {
+        velocity += camForward * speed * deltaTime;
     }
 
-    if (Keyboard[SDL_SCANCODE_S]) {
-        Velocity -= CamForward * Speed * DeltaTime;
+    if (keyboard[SDL_SCANCODE_S]) {
+        velocity -= camForward * speed * deltaTime;
     }
 
-    if (Keyboard[SDL_SCANCODE_Q]) {
-        Velocity.y -= Speed * DeltaTime;
+    if (keyboard[SDL_SCANCODE_Q]) {
+        velocity.y -= speed * deltaTime;
     }
 
-    if (Keyboard[SDL_SCANCODE_E]) {
-        Velocity.y += Speed * DeltaTime;
+    if (keyboard[SDL_SCANCODE_E]) {
+        velocity.y += speed * deltaTime;
     }
 
-    Camera->Position += Velocity * DeltaTime;
-    Velocity *= Friction;
+    camera->position += velocity * deltaTime;
+    velocity *= friction;
 
-    if (Engine::Math::Abs(Velocity.x) < 1e-3f) Velocity.x = 0.0f;
-    if (Engine::Math::Abs(Velocity.y) < 1e-3f) Velocity.y = 0.0f;
+    if (Hx::Abs(velocity.x) < 1e-3f) velocity.x = 0.0f;
+    if (Hx::Abs(velocity.y) < 1e-3f) velocity.y = 0.0f;
 
-    f32 MouseDX, MouseDY;
-    Uint32 MouseState = SDL_GetRelativeMouseState(&MouseDX, &MouseDY);
+    f32 mouseDX, mouseDY;
+    Uint32 mouseState = SDL_GetRelativeMouseState(&mouseDX, &mouseDY);
     
-    Camera->Rotation.x -= MouseDY * MouseSensitivity;
-    Camera->Rotation.y += MouseDX * MouseSensitivity;
+    camera->rotation.x -= mouseDY * mouseSensitivity;
+    camera->rotation.y += mouseDX * mouseSensitivity;
 }
 
-int main(int ArgCount, char** ArgValues) {
+int main(int argCount, char** argValues) {
     SDL_Init(SDL_INIT_VIDEO);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    SDL_Window* Window = SDL_CreateWindow("HARM", 800, 600, SDL_WINDOW_OPENGL);
-    SDL_GLContext GLContext = SDL_GL_CreateContext(Window);
-    SDL_GL_MakeCurrent(Window, GLContext);
+    SDL_Window* window = SDL_CreateWindow("HARM", 800, 600, SDL_WINDOW_OPENGL);
+    SDL_GLContext glContext = SDL_GL_CreateContext(window);
+    SDL_GL_MakeCurrent(window, glContext);
 
     SDL_GL_SetSwapInterval(1);
-    SDL_SetWindowRelativeMouseMode(Window, true);
+    SDL_SetWindowRelativeMouseMode(window, true);
 
     // Load Game DLL
-    HMODULE GameDLL = LoadLibraryA("Game.dll");
-    if (!GameDLL) {
+    HMODULE gameDLL = LoadLibraryA("Game.dll");
+    if (!gameDLL) {
         SDL_Log("Failed to load Game.dll");
         return -1;
     }
 
     // Get function pointers from Game DLL
-    GameInitFn GameInit = (GameInitFn)GetProcAddress(GameDLL, "GameInit");
-    GameShutdownFn GameShutdown = (GameShutdownFn)GetProcAddress(GameDLL, "GameShutdown");
-    GameTickFn GameTick = (GameTickFn)GetProcAddress(GameDLL, "GameTick");
+    GameInitFn gameInit = (GameInitFn)GetProcAddress(gameDLL, "GameInit");
+    GameShutdownFn gameShutdown = (GameShutdownFn)GetProcAddress(gameDLL, "GameShutdown");
+    GameTickFn gameTick = (GameTickFn)GetProcAddress(gameDLL, "GameTick");
 
-    if (!GameInit || !GameShutdown || !GameTick) {
+    if (!gameInit || !gameShutdown || !gameTick) {
         SDL_Log("Failed to get CreateGameInstance or DestroyGameInstance function from Game.dll");
-        FreeLibrary(GameDLL);
+        FreeLibrary(gameDLL);
         return -1;
     }
 
     // TODO: Add a name to the allocator
-    void* MainMemory = malloc(Engine::Memory::Megabytes(16));
-    Engine::Memory::ArenaAllocator MainArena = {};
-    Engine::Memory::InitArena(MainArena, MainMemory, Engine::Memory::Megabytes(16));
+    void* mainMemory = malloc(Hx::Megabytes(16));
+    Hx::ArenaAllocator mainArena = {};
+    Hx::InitArena(mainArena, mainMemory, Hx::Megabytes(16));
 
-    void* TransientMemory = malloc(Engine::Memory::Megabytes(8));
-    Engine::Memory::ArenaAllocator TransientArena = {};
-    Engine::Memory::InitArena(TransientArena, TransientMemory, Engine::Memory::Megabytes(8));
+    void* transientMemory = malloc(Hx::Megabytes(8));
+    Hx::ArenaAllocator transientArena = {};
+    Hx::InitArena(transientArena, transientMemory, Hx::Megabytes(8));
 
-    Engine::IO::FileSystem FileSystem;
+    Hx::FileSystem fileSystem;
     
     // Initialize the render device
-    Engine::RenderCore::RenderDeviceDesc RenderDeviceDesc = {};
-    RenderDeviceDesc.Width = 800;
-    RenderDeviceDesc.Height = 600;
-    RenderDeviceDesc.VSync = true;
-    RenderDeviceDesc.DebugLayer = true;
+    Hx::RenderDeviceDesc renderDeviceDesc = {};
+    renderDeviceDesc.width = 800;
+    renderDeviceDesc.height = 600;
+    renderDeviceDesc.vSync = true;
+    renderDeviceDesc.debugLayer = true;
 
-    void* RenderDeviceMemory = Engine::Memory::Alloc(
-            &MainArena.Base,
-            sizeof(Engine::RenderCore::RenderDevice),
-            alignof(Engine::RenderCore::RenderDevice),
-            Engine::Memory::AllocFlags::ZeroInit
+    void* renderDeviceMemory = Hx::Alloc(
+            &mainArena.base,
+            sizeof(Hx::RenderDevice),
+            alignof(Hx::RenderDevice),
+            Hx::AllocFlags::ZeroInit
     );
 
-    Engine::RenderCore::RenderDevice* RenderDevice = new (RenderDeviceMemory) Engine::RenderCore::RenderDevice(RenderDeviceDesc);
+    Hx::RenderDevice* renderDevice = new (renderDeviceMemory) Hx::RenderDevice(renderDeviceDesc);
 
     // Initialize the render system
-    void* RenderSystemMemory = Engine::Memory::Alloc(
-            &MainArena.Base,
-            sizeof(Engine::Renderer::RenderSystem),
-            alignof(Engine::Renderer::RenderSystem),
-            Engine::Memory::AllocFlags::ZeroInit
+    void* renderSystemMemory = Hx::Alloc(
+            &mainArena.base,
+            sizeof(Hx::RenderSystem),
+            alignof(Hx::RenderSystem),
+            Hx::AllocFlags::ZeroInit
     );
     
-    Engine::Renderer::RenderSystem* RenderSystem = new (RenderSystemMemory) Engine::Renderer::RenderSystem(RenderDevice);
+    Hx::RenderSystem* renderSystem = new (renderSystemMemory) Hx::RenderSystem(renderDevice);
 
-    Engine::Context EngineContext = {};
-    EngineContext.FileSystem = &FileSystem;
-    EngineContext.MainArena = &MainArena;
-    EngineContext.TransientArena = &TransientArena;
+    Hx::Context engineContext = {};
+    engineContext.fileSystem = &fileSystem;
+    engineContext.mainArena = &mainArena;
+    engineContext.transientArena = &transientArena;
 
     // Initialize the game
-    GameInit(&EngineContext);
+    gameInit(&engineContext);
 
-    Engine::Renderer::Vertex Vertices[] = {
+    Hx::Vertex vertices[] = {
         { { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } },
         { {  0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 0.0f } },
         { {  0.0f,  0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.5f, 1.0f } }
     };
 
-    uint32_t Indices[] = { 0, 1, 2 };
+    uint32_t indices[] = { 0, 1, 2 };
 
-    Engine::Renderer::MeshHandle Mesh = RenderSystem->CreateMesh(Vertices, 3, Indices, 3);
-    Engine::Renderer::MaterialHandle Material = RenderSystem->CreateMaterial(Engine::Renderer::MaterialType::Opaque);
+    Hx::MeshHandle mesh = renderSystem->CreateMesh(vertices, 3, indices, 3);
+    Hx::MaterialHandle material = renderSystem->CreateMaterial(Hx::MaterialType::Opaque);
 
-    Engine::Renderer::Camera Camera;
-    Camera.SetPerspective(70.0f, 800.0f / 600.0f, 0.1f, 100.0f);
-    Camera.Position = Engine::Math::Vector3(0.0f, 0.0f, 3.0f);
+    Hx::Camera camera;
+    camera.SetPerspective(70.0f, 800.0f / 600.0f, 0.1f, 100.0f);
+    camera.position = Hx::Vector3(0.0f, 0.0f, 3.0f);
 
-    CameraController CamController(&Camera);
+    CameraController camController(&camera);
 
-    Engine::World::MapData* Map = Engine::World::LoadMapFromFile("Maps/TestMap.map", FileSystem, TransientArena);
+    Hx::MapData* map = Hx::LoadMapFromFile("Maps/TestMap.map", fileSystem, transientArena);
 
-    bool Running = true;
-    while (Running) {
-        SDL_Event Event;
-        while (SDL_PollEvent(&Event)) {
-            if (Event.type == SDL_EVENT_QUIT) {
-                Running = false;
+    bool running = true;
+    while (running) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_EVENT_QUIT) {
+                running = false;
             }
         }
 
-        static Uint64 LastTime = SDL_GetPerformanceCounter();
-        Uint64 CurrentTime = SDL_GetPerformanceCounter();
-        f32 DeltaTime = static_cast<f32>(CurrentTime - LastTime) / static_cast<f32>(SDL_GetPerformanceFrequency());
-        LastTime = CurrentTime;
+        static Uint64 lastTime = SDL_GetPerformanceCounter();
+        Uint64 currentTime = SDL_GetPerformanceCounter();
+        f32 deltaTime = static_cast<f32>(currentTime - lastTime) / static_cast<f32>(SDL_GetPerformanceFrequency());
+        lastTime = currentTime;
 
-        GameTick(DeltaTime);
+        gameTick(deltaTime);
 
-        CamController.Tick(DeltaTime);
+        camController.Tick(deltaTime);
 
-        Engine::Math::Matrix4 ProjectionMatrix = Camera.GetProjectionMatrix();
-        Engine::Math::Matrix4 ViewMatrix = Camera.GetViewMatrix();
-        Engine::Math::Matrix4 ModelMatrix = Engine::Math::Matrix4::Identity();
+        Hx::Matrix4 projectionMatrix = camera.GetProjectionMatrix();
+        Hx::Matrix4 viewMatrix = camera.GetViewMatrix();
+        Hx::Matrix4 modelMatrix = Hx::Matrix4::Identity();
 
-        RenderSystem->BeginFrame(ViewMatrix, ProjectionMatrix);
-        RenderSystem->Submit(Mesh, Material, ModelMatrix);
-        RenderSystem->EndFrame();
+        renderSystem->BeginFrame(viewMatrix, projectionMatrix);
+        renderSystem->Submit(mesh, material, modelMatrix);
+        renderSystem->EndFrame();
 
-        SDL_GL_SwapWindow(Window);
+        SDL_GL_SwapWindow(window);
     }
 
-    GameShutdown();
-    if (GameDLL) {
-        FreeLibrary(GameDLL);
+    gameShutdown();
+    if (gameDLL) {
+        FreeLibrary(gameDLL);
     }
 
-    SDL_GL_DestroyContext(GLContext);
-    SDL_DestroyWindow(Window);
+    SDL_GL_DestroyContext(glContext);
+    SDL_DestroyWindow(window);
     SDL_Quit();
     return 0;
 }

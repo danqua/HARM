@@ -5,13 +5,12 @@
 #include <vector>
 #include <utility>
 
-
-namespace Engine {
+namespace Hx {
 
     template <typename Tag, typename Record>
     class ResourceTable {
     public:
-    
+
         ResourceTable() = default;
 
         void Reserve(u32 Capacity) {
