@@ -2,7 +2,7 @@
 
 #include "Engine/Core/Types.h"
 
-namespace Engine::Memory {
+namespace Hx {
 
     struct AllocStats {
         u64 BytesInUse = 0;
@@ -36,50 +36,50 @@ namespace Engine::Memory {
 
     struct Allocator;
 
-    using AllocFn   = void* (*)(Allocator* Self, usize Size, usize Alignment, AllocFlags Flags);
-    using FreeFn    = void  (*)(Allocator* Self, void* Ptr, usize Size, usize Alignment);
-    using ReallocFn = void* (*)(Allocator* Self, void* Ptr, usize OldSize, usize NewSize, usize Alignment, AllocFlags Flags);
+    using AllocFn   = void* (*)(Allocator* self, usize size, usize alignment, AllocFlags flags);
+    using FreeFn    = void  (*)(Allocator* self, void* ptr, usize size, usize alignment);
+    using ReallocFn = void* (*)(Allocator* self, void* ptr, usize oldSize, usize newSize, usize alignment, AllocFlags flags);
 
     struct Allocator {
-        AllocFn    Alloc;
-        FreeFn     Free;
-        ReallocFn  Realloc;
+        AllocFn    alloc;
+        FreeFn     free;
+        ReallocFn  realloc;
 
-        AllocStats Stats;
-        void*      UserData;
-    };
+        AllocStats stats;
+        void*      userData;
+    };;
 
-    inline void* Alloc(Allocator* A, usize Size, usize Alignment, AllocFlags Flags = AllocFlags::None) {
-        return A->Alloc(A, Size, Alignment, Flags);
+    inline void* Alloc(Allocator* a, usize size, usize alignment, AllocFlags flags = AllocFlags::None) {
+        return a->alloc(a, size, alignment, flags);
     }
 
-    inline void Free(Allocator* A, void* Ptr, usize Size, usize Alignment) {
-        A->Free(A, Ptr, Size, Alignment);
+    inline void Free(Allocator* a, void* ptr, usize size, usize alignment) {
+        a->free(a, ptr, size, alignment);
     }
 
-    inline void* Realloc(Allocator* A, void* Ptr, usize OldSize, usize NewSize, usize Alignment, AllocFlags Flags = AllocFlags::None) {
-        if (!A->Realloc) {
+    inline void* Realloc(Allocator* a, void* ptr, usize oldSize, usize newSize, usize alignment, AllocFlags flags = AllocFlags::None) {
+        if (!a->realloc) {
             // Not all allocators implement Realloc
             return nullptr;
         }
 
-        return A->Realloc(A, Ptr, OldSize, NewSize, Alignment, Flags);
+        return a->realloc(a, ptr, oldSize, newSize, alignment, flags);
     }
 
     // Convenience templates
     template <typename T>
-    inline T* AllocOne(Allocator* A, AllocFlags Flags = AllocFlags::None) {
-        return static_cast<T*>(Alloc(A, sizeof(T), alignof(T), Flags));
+    inline T* AllocOne(Allocator* a, AllocFlags flags = AllocFlags::None) {
+        return static_cast<T*>(Alloc(a, sizeof(T), alignof(T), flags));
     }
 
     template <typename T>
-    inline T* AllocArray(Allocator* A, usize Count, AllocFlags Flags = AllocFlags::None) {
-        return static_cast<T*>(Alloc(A, sizeof(T) * Count, alignof(T), Flags));
+    inline T* AllocArray(Allocator* a, usize count, AllocFlags flags = AllocFlags::None) {
+        return static_cast<T*>(Alloc(a, sizeof(T) * count, alignof(T), flags));
     }
 
     template <typename T>
-    inline void FreeArray(Allocator* A, T* Ptr, usize Count) {
-        Free(A, static_cast<void*>(Ptr), sizeof(T) * Count, alignof(T));
+    inline void FreeArray(Allocator* a, T* ptr, usize count) {
+        Free(a, static_cast<void*>(ptr), sizeof(T) * count, alignof(T));
     }
 
 }

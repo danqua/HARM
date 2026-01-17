@@ -2,37 +2,37 @@
 #include "Engine/Memory/ArenaAllocator.h"
 #include "Engine/IO/FileSystem.h"
 
-namespace Engine::World {
+namespace Hx {
 
     template <typename T>
-    inline void ReadLumpData(IO::FileHandle* File, const LumpHeader& Lump, T*& OutData, usize& OutCount, Memory::ArenaAllocator& Arena) {
-        OutCount = Lump.Length / sizeof(T);
-        OutData = Memory::AllocArray<T>(&Arena.Base, OutCount);
-        File->ReadAt(OutData, Lump.Length, Lump.Offset);
+    inline void ReadLumpData(Hx::FileHandle* file, const LumpHeader& lump, T*& outData, usize& outCount, Hx::ArenaAllocator& arena) {
+        outCount = lump.length / sizeof(T);
+        outData = Hx::AllocArray<T>(&arena.base, outCount);
+        file->ReadAt(outData, lump.length, lump.offset);
     }
 
-    MapData* LoadMapFromFile(const char* Filename, IO::FileSystem& FileSystem, Memory::ArenaAllocator& TransientArena) {
-        IO::FileHandle* File = FileSystem.OpenFileRead(Filename);
-        if (!File) {
+    MapData* LoadMapFromFile(const char* filename, Hx::FileSystem& fileSystem, Hx::ArenaAllocator& transientArena) {
+        Hx::FileHandle* file = fileSystem.OpenFileRead(filename);
+        if (!file) {
             return nullptr;
         }
 
-        MapHeader Header;
-        if (!File->Read(&Header, sizeof(MapHeader))) {
-            FileSystem.CloseFile(File);
+        MapHeader header;
+        if (!file->Read(&header, sizeof(MapHeader))) {
+            fileSystem.CloseFile(file);
             return nullptr;
         }
 
-        MapData* Map = Memory::AllocOne<MapData>(&TransientArena.Base, Memory::AllocFlags::ZeroInit);
+        MapData* map = Hx::AllocOne<MapData>(&transientArena.base, Hx::AllocFlags::ZeroInit);
 
-        ReadLumpData(File, Header.LineSegsLump, Map->LineSegments, Map->LineSegmentCount, TransientArena);
-        ReadLumpData(File, Header.EdgesLump, Map->Edges, Map->EdgeCount, TransientArena);
-        ReadLumpData(File, Header.SubSectorsLump, Map->Subsectors, Map->SubsectorCount, TransientArena);
-        ReadLumpData(File, Header.SectorsLump, Map->Sectors, Map->SectorCount, TransientArena);
+        ReadLumpData(file, header.lineSegsLump, map->lineSegments, map->lineSegmentCount, transientArena);
+        ReadLumpData(file, header.edgesLump, map->edges, map->edgeCount, transientArena);
+        ReadLumpData(file, header.subSectorsLump, map->subsectors, map->subsectorCount, transientArena);
+        ReadLumpData(file, header.sectorsLump, map->sectors, map->sectorCount, transientArena);
 
-        FileSystem.CloseFile(File);
+        fileSystem.CloseFile(file);
 
-        return Map;
+        return map;
     }
 
 }

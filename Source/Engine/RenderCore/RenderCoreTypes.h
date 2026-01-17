@@ -4,7 +4,7 @@
 #include "Engine/Core/Handle.h"
 #include "Engine/Math/Vector4.h"
 
-namespace Engine::RenderCore {
+namespace Hx {
     
     struct BufferTag {};
     struct ShaderTag {};
@@ -35,10 +35,10 @@ namespace Engine::RenderCore {
     };
 
     struct BufferDesc {
-        BufferType Type;
-        BufferUsage Usage;
-        usize SizeInBytes;
-        const void* InitialData;
+        BufferType type;
+        BufferUsage usage;
+        usize sizeInBytes;
+        const void* initialData;
     };
 
     enum class ShaderStage : u8 {
@@ -48,15 +48,15 @@ namespace Engine::RenderCore {
     };
 
     struct ShaderDesc {
-        ShaderStage Stage;
-        const char* Source;
-        const char* DebugName;
+        ShaderStage stage;
+        const char* source;
+        const char* debugName;
     };
 
     struct ProgramDesc {
-        ShaderHandle VertexShader;
-        ShaderHandle FragmentShader;
-        const char* DebugName;
+        ShaderHandle vertexShader;
+        ShaderHandle fragmentShader;
+        const char* debugName;
     };
 
     enum class TextureFormat : u8 {
@@ -66,10 +66,10 @@ namespace Engine::RenderCore {
     };
 
     struct TextureDesc {
-        TextureFormat Format;
-        u32 Width;
-        u32 Height;
-        const void* InitialData;
+        TextureFormat format;
+        u32 width;
+        u32 height;
+        const void* initialData;
     };
 
     enum class VertexAttribFormat : u8 {
@@ -81,22 +81,22 @@ namespace Engine::RenderCore {
     };
 
     struct VertexBinding {
-        u32 Stride;
-        u32 Divisor;
+        u32 stride;
+        u32 divisor;
     };
 
     struct VertexAttributeDesc {
-        u32 Location;
-        u32 Binding;
-        VertexAttribFormat Format;
-        u32 Offset;
+        u32 location;
+        u32 binding;
+        VertexAttribFormat format;
+        u32 offset;
     };
 
     struct VertexLayoutDesc {
-        VertexAttributeDesc Attributes[16];
-        u32 AttributeCount;
-        VertexBinding Bindings[8];
-        u32 BindingCount;
+        VertexAttributeDesc attributes[16];
+        u32 attributeCount;
+        VertexBinding bindings[8];
+        u32 bindingCount;
     };
 
     enum class CullMode : u8 {
@@ -128,40 +128,40 @@ namespace Engine::RenderCore {
     };
 
     struct PipelineDesc {
-        ProgramHandle Program;
-        VertexLayoutHandle VertexLayout;
+        ProgramHandle program;
+        VertexLayoutHandle vertexLayout;
 
-        PrimitiveTopology Topology = PrimitiveTopology::Triangles;
+        PrimitiveTopology topology = PrimitiveTopology::Triangles;
 
-        bool DepthTest = true;
-        bool DepthWrite = true;
-        CompareOp DepthCompare = CompareOp::Less;
+        bool depthTest = true;
+        bool depthWrite = true;
+        CompareOp depthCompare = CompareOp::Less;
 
-        FrontFace Front = FrontFace::CounterClockwise;
-        CullMode Cull = CullMode::Back;
-        bool Wireframe = false;
+        FrontFace front = FrontFace::CounterClockwise;
+        CullMode cull = CullMode::Back;
+        bool wireframe = false;
     };
 
     struct FramebufferDesc {
-        u32 Width;
-        u32 Height;
-        TextureHandle ColorAttachments[4];
-        TextureHandle DepthAttachment;
+        u32 width;
+        u32 height;
+        TextureHandle colorAttachments[4];
+        TextureHandle depthAttachment;
     };
 
     struct RenderPassDesc {
-        FramebufferHandle Framebuffer;
-        bool ClearColor;
-        bool ClearDepth;
-        Math::Vector4 ClearColorValue; // TODO: I should implement some color type
-        float ClearDepthValue;
+        FramebufferHandle framebuffer;
+        bool clearColor;
+        bool clearDepth;
+        Hx::Vector4 clearColorValue; // TODO: I should implement some color type
+        float clearDepthValue;
     };
 
     struct RenderDeviceDesc {
-        u32 Width;
-        u32 Height;
-        bool VSync;
-        bool DebugLayer;
+        u32 width;
+        u32 height;
+        bool vSync;
+        bool debugLayer;
     };
     
 }

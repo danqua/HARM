@@ -2,273 +2,273 @@
 #include "Engine/Core/ResourceTable.h"
 #include "Engine/IO/FileSystem.h"
 
-namespace Engine::Renderer {
+namespace Hx {
 
     struct MeshRecord {
-        MeshHandle Handle;
-        RenderCore::BufferHandle VertexBuffer;
-        RenderCore::BufferHandle IndexBuffer;
-        usize IndexCount;
+        MeshHandle handle;
+        Hx::BufferHandle vertexBuffer;
+        Hx::BufferHandle indexBuffer;
+        usize indexCount;
     };
 
     struct StaticMeshRecord {
-        StaticMeshHandle Handle;
+        StaticMeshHandle handle;
         
     };
 
     struct MaterialRecord {
-        MaterialHandle Handle;
-        RenderCore::ProgramHandle Program;
-        RenderCore::PipelineHandle Pipeline;
-        Math::Vector4 DiffuseColor;
+        MaterialHandle handle;
+        Hx::ProgramHandle program;
+        Hx::PipelineHandle pipeline;
+        Hx::Vector4 diffuseColor;
     };
 
     constexpr usize MaxDrawCommands = 1024;
 
     struct DrawCommand {
-        MaterialHandle Material;
-        RenderCore::PipelineHandle Pipeline;
-        RenderCore::BufferHandle VertexBuffer;
-        RenderCore::BufferHandle IndexBuffer;
-        Math::Matrix4 Transform;
-        u32 IndexCount;
-        u32 IndexOffset;
-        u32 VertexOffset;
+        MaterialHandle material;
+        Hx::PipelineHandle pipeline;
+        Hx::BufferHandle vertexBuffer;
+        Hx::BufferHandle indexBuffer;
+        Hx::Matrix4 transform;
+        u32 indexCount;
+        u32 indexOffset;
+        u32 vertexOffset;
     };
     
     struct RenderSystemImpl {
-        RenderCore::RenderDevice* Device;
+        Hx::RenderDevice* device;
 
-        ResourceTable<MeshTag, MeshRecord> MeshTable;
-        ResourceTable<StaticMeshTag, StaticMeshRecord> StaticMeshTable;
-        ResourceTable<MaterialTag, MaterialRecord> MaterialTable;
+        ResourceTable<MeshTag, MeshRecord> meshTable;
+        ResourceTable<StaticMeshTag, StaticMeshRecord> staticMeshTable;
+        ResourceTable<MaterialTag, MaterialRecord> materialTable;
 
-        DrawCommand DrawCommands[MaxDrawCommands];
-        usize DrawCommandCount = 0;
+        DrawCommand drawCommands[MaxDrawCommands];
+        usize drawCommandCount = 0;
 
-        Math::Matrix4 CurrentViewMatrix;
-        Math::Matrix4 CurrentProjectionMatrix;
+        Hx::Matrix4 currentViewMatrix;
+        Hx::Matrix4 currentProjectionMatrix;
 
-        RenderCore::PipelineHandle OpaquePipeline;
-        RenderCore::PipelineHandle TransparentPipeline;
-        RenderCore::PipelineHandle UnlitPipeline;
+        Hx::PipelineHandle opaquePipeline;
+        Hx::PipelineHandle transparentPipeline;
+        Hx::PipelineHandle unlitPipeline;
 
-        RenderCore::ProgramHandle OpaqueShaderProgram;
-        RenderCore::ProgramHandle TransparentShaderProgram;
-        RenderCore::ProgramHandle UnlitShaderProgram;
+        Hx::ProgramHandle opaqueShaderProgram;
+        Hx::ProgramHandle transparentShaderProgram;
+        Hx::ProgramHandle unlitShaderProgram;
     };
 
-    inline static RenderCore::ShaderHandle LoadShaderFromFile(RenderCore::RenderDevice* Device, const char* Filename, RenderCore::ShaderStage Stage) {
-        IO::FileSystem FileSystem;
+    inline static Hx::ShaderHandle LoadShaderFromFile(Hx::RenderDevice* device, const char* filename, Hx::ShaderStage stage) {
+        Hx::FileSystem fileSystem;
 
-        IO::FileHandle* Handle = FileSystem.OpenFileRead(Filename);
-        if (!Handle) return RenderCore::ShaderHandle{};
+        Hx::FileHandle* handle = fileSystem.OpenFileRead(filename);
+        if (!handle) return Hx::ShaderHandle{};
 
-        usize FileSize = Handle->GetSize();
-        char* Buffer = new char[FileSize + 1]{};
+        usize fileSize = handle->GetSize();
+        char* buffer = new char[fileSize + 1]{};
 
-        Handle->Read(Buffer, FileSize);
+        handle->Read(buffer, fileSize);
 
-        RenderCore::ShaderDesc ShaderDesc = {};
-        ShaderDesc.Stage = Stage;
-        ShaderDesc.Source = Buffer;
-        ShaderDesc.DebugName = Filename;
+        Hx::ShaderDesc shaderDesc = {};
+        shaderDesc.stage = stage;
+        shaderDesc.source = buffer;
+        shaderDesc.debugName = filename;
 
-        RenderCore::ShaderHandle Shader = Device->CreateShader(ShaderDesc);
+        Hx::ShaderHandle shader = device->CreateShader(shaderDesc);
 
-        FileSystem.CloseFile(Handle);
+        fileSystem.CloseFile(handle);
 
-        return Shader;
+        return shader;
     }
 
-    inline static RenderCore::ProgramHandle CreateShaderProgram(RenderCore::RenderDevice* Device, const char* VertexShaderPath, const char* FragmentShaderPath, const char* DebugName) {
-        RenderCore::ShaderHandle VertexShader = LoadShaderFromFile(Device, VertexShaderPath, RenderCore::ShaderStage::Vertex);
-        if (!VertexShader) {
-            return RenderCore::ProgramHandle{};
+    inline static Hx::ProgramHandle CreateShaderProgram(Hx::RenderDevice* device, const char* vertexShaderPath, const char* fragmentShaderPath, const char* debugName) {
+        Hx::ShaderHandle vertexShader = LoadShaderFromFile(device, vertexShaderPath, Hx::ShaderStage::Vertex);
+        if (!vertexShader) {
+            return Hx::ProgramHandle{};
         }
 
-        RenderCore::ShaderHandle FragmentShader = LoadShaderFromFile(Device, FragmentShaderPath, RenderCore::ShaderStage::Fragment);
-        if (!FragmentShader) {
-            Device->DestroyShader(VertexShader);
-            return RenderCore::ProgramHandle{};
+        Hx::ShaderHandle fragmentShader = LoadShaderFromFile(device, fragmentShaderPath, Hx::ShaderStage::Fragment);
+        if (!fragmentShader) {
+            device->DestroyShader(vertexShader);
+            return Hx::ProgramHandle{};
         }
 
-        RenderCore::ProgramDesc ProgramDesc = {};
-        ProgramDesc.VertexShader = VertexShader;
-        ProgramDesc.FragmentShader = FragmentShader;
-        ProgramDesc.DebugName = DebugName;
+        Hx::ProgramDesc programDesc = {};
+        programDesc.vertexShader = vertexShader;
+        programDesc.fragmentShader = fragmentShader;
+        programDesc.debugName = debugName;
 
-        RenderCore::ProgramHandle Program = Device->CreateProgram(ProgramDesc);
+        Hx::ProgramHandle program = device->CreateProgram(programDesc);
 
-        Device->DestroyShader(VertexShader);
-        Device->DestroyShader(FragmentShader);
+        device->DestroyShader(vertexShader);
+        device->DestroyShader(fragmentShader);
 
-        return Program;
+        return program;
     }
 
-    static inline RenderCore::PipelineHandle CreatePipeline(RenderCore::RenderDevice* Device, RenderCore::ProgramHandle Program, MaterialType Type) {
-        RenderCore::VertexLayoutDesc VertexLayoutDesc;
+    static inline Hx::PipelineHandle CreatePipeline(Hx::RenderDevice* device, Hx::ProgramHandle program, MaterialType type) {
+        Hx::VertexLayoutDesc vertexLayoutDesc;
         // Configure pipeline based on material type
-        switch (Type) {
+        switch (type) {
             case MaterialType::Opaque:
             case MaterialType::Transparent: {
-                VertexLayoutDesc.AttributeCount = 3;
-                VertexLayoutDesc.Attributes[0] = { 0, 0, RenderCore::VertexAttribFormat::Float3, 0 };   // Position
-                VertexLayoutDesc.Attributes[1] = { 1, 0, RenderCore::VertexAttribFormat::Float3, 12 };  // Normal
-                VertexLayoutDesc.Attributes[2] = { 2, 0, RenderCore::VertexAttribFormat::Float2, 24 };  // TexCoord
-                VertexLayoutDesc.BindingCount = 1;
-                VertexLayoutDesc.Bindings[0] = { 32, 0 }; // Stride, Divisor
+                vertexLayoutDesc.attributeCount = 3;
+                vertexLayoutDesc.attributes[0] = { 0, 0, Hx::VertexAttribFormat::Float3, 0 };   // Position
+                vertexLayoutDesc.attributes[1] = { 1, 0, Hx::VertexAttribFormat::Float3, 12 };  // Normal
+                vertexLayoutDesc.attributes[2] = { 2, 0, Hx::VertexAttribFormat::Float2, 24 };  // TexCoord
+                vertexLayoutDesc.bindingCount = 1;
+                vertexLayoutDesc.bindings[0] = { 32, 0 }; // Stride, Divisor
             } break;
             case MaterialType::Unlit: {
-                VertexLayoutDesc.AttributeCount = 2;
-                VertexLayoutDesc.Attributes[0] = { 0, 0, RenderCore::VertexAttribFormat::Float3, 0 };   // Position
-                VertexLayoutDesc.Attributes[1] = { 1, 0, RenderCore::VertexAttribFormat::Float2, 12 };  // TexCoord
-                VertexLayoutDesc.BindingCount = 1;
-                VertexLayoutDesc.Bindings[0] = { 20, 0 }; // Stride, Divisor
+                vertexLayoutDesc.attributeCount = 2;
+                vertexLayoutDesc.attributes[0] = { 0, 0, Hx::VertexAttribFormat::Float3, 0 };   // Position
+                vertexLayoutDesc.attributes[1] = { 1, 0, Hx::VertexAttribFormat::Float2, 12 };  // TexCoord
+                vertexLayoutDesc.bindingCount = 1;
+                vertexLayoutDesc.bindings[0] = { 20, 0 }; // Stride, Divisor
             } break;
         }
 
-        RenderCore::PipelineDesc PipelineDesc;
-        PipelineDesc.Program = Program;
-        PipelineDesc.VertexLayout = Device->CreateVertexLayout(VertexLayoutDesc);
+        Hx::PipelineDesc pipelineDesc;
+        pipelineDesc.program = program;
+        pipelineDesc.vertexLayout = device->CreateVertexLayout(vertexLayoutDesc);
 
-        RenderCore::PipelineHandle Pipeline = Device->CreatePipeline(PipelineDesc);
-        return Pipeline;
+        Hx::PipelineHandle pipeline = device->CreatePipeline(pipelineDesc);
+        return pipeline;
     }
 
-    RenderSystem::RenderSystem(RenderCore::RenderDevice* InDevice) {
+    RenderSystem::RenderSystem(Hx::RenderDevice* inDevice) {
         Impl = new RenderSystemImpl();
-        Impl->Device = InDevice;
+        Impl->device = inDevice;
 
-        Impl->OpaqueShaderProgram = CreateShaderProgram(Impl->Device, "Shaders/Opaque.vert", "Shaders/Opaque.frag", "OpaqueShaderProgram");
-        Impl->TransparentShaderProgram = CreateShaderProgram(Impl->Device, "Shaders/Transparent.vert", "Shaders/Transparent.frag", "TransparentShaderProgram");
-        Impl->UnlitShaderProgram = CreateShaderProgram(Impl->Device, "Shaders/Unlit.vert", "Shaders/Unlit.frag", "UnlitShaderProgram");
+        Impl->opaqueShaderProgram = CreateShaderProgram(Impl->device, "Shaders/Opaque.vert", "Shaders/Opaque.frag", "OpaqueShaderProgram");
+        Impl->transparentShaderProgram = CreateShaderProgram(Impl->device, "Shaders/Transparent.vert", "Shaders/Transparent.frag", "TransparentShaderProgram");
+        Impl->unlitShaderProgram = CreateShaderProgram(Impl->device, "Shaders/Unlit.vert", "Shaders/Unlit.frag", "UnlitShaderProgram");
         
-        Impl->OpaquePipeline = CreatePipeline(Impl->Device, Impl->OpaqueShaderProgram, MaterialType::Opaque);
-        Impl->TransparentPipeline = CreatePipeline(Impl->Device, Impl->TransparentShaderProgram, MaterialType::Transparent);
-        Impl->UnlitPipeline = CreatePipeline(Impl->Device, Impl->UnlitShaderProgram, MaterialType::Unlit);
+        Impl->opaquePipeline = CreatePipeline(Impl->device, Impl->opaqueShaderProgram, MaterialType::Opaque);
+        Impl->transparentPipeline = CreatePipeline(Impl->device, Impl->transparentShaderProgram, MaterialType::Transparent);
+        Impl->unlitPipeline = CreatePipeline(Impl->device, Impl->unlitShaderProgram, MaterialType::Unlit);
     }
 
     RenderSystem::~RenderSystem() {
 
     }
 
-    void RenderSystem::BeginFrame(const Math::Matrix4& ViewMatrix, const Math::Matrix4& ProjectionMatrix) {
-        Impl->CurrentViewMatrix = ViewMatrix;
-        Impl->CurrentProjectionMatrix = ProjectionMatrix;
+    void RenderSystem::BeginFrame(const Hx::Matrix4& viewMatrix, const Hx::Matrix4& projectionMatrix) {
+        Impl->currentViewMatrix = viewMatrix;
+        Impl->currentProjectionMatrix = projectionMatrix;
     }
 
     void RenderSystem::EndFrame() {
         FlushDrawCommands();
-        Impl->DrawCommandCount = 0;
+        Impl->drawCommandCount = 0;
     }
 
-    MeshHandle RenderSystem::CreateMesh(const Vertex* Vertices, usize VertexCount, const u32* Indices, usize IndexCount) {
-        return Impl->MeshTable.Create([&](MeshRecord& Mesh) {
-            RenderCore::BufferDesc VertexBufferDesc;
-            VertexBufferDesc.Type = RenderCore::BufferType::Vertex;
-            VertexBufferDesc.Usage = RenderCore::BufferUsage::Static;
-            VertexBufferDesc.SizeInBytes = VertexCount * sizeof(Vertex);
-            VertexBufferDesc.InitialData = Vertices;
+    MeshHandle RenderSystem::CreateMesh(const Vertex* vertices, usize vertexCount, const u32* indices, usize indexCount) {
+        return Impl->meshTable.Create([&](MeshRecord& mesh) {
+            Hx::BufferDesc vertexBufferDesc;
+            vertexBufferDesc.type = Hx::BufferType::Vertex;
+            vertexBufferDesc.usage = Hx::BufferUsage::Static;
+            vertexBufferDesc.sizeInBytes = vertexCount * sizeof(Vertex);
+            vertexBufferDesc.initialData = vertices;
 
-            RenderCore::BufferDesc IndexBufferDesc;
-            IndexBufferDesc.Type = RenderCore::BufferType::Index;
-            IndexBufferDesc.Usage = RenderCore::BufferUsage::Static;
-            IndexBufferDesc.SizeInBytes = IndexCount * sizeof(u32);
-            IndexBufferDesc.InitialData = Indices;
+            Hx::BufferDesc indexBufferDesc;
+            indexBufferDesc.type = Hx::BufferType::Index;
+            indexBufferDesc.usage = Hx::BufferUsage::Static;
+            indexBufferDesc.sizeInBytes = indexCount * sizeof(u32);
+            indexBufferDesc.initialData = indices;
 
-            Mesh.Handle = Mesh.Handle;
-            Mesh.VertexBuffer = Impl->Device->CreateBuffer(VertexBufferDesc);
-            Mesh.IndexBuffer = Impl->Device->CreateBuffer(IndexBufferDesc);
-            Mesh.IndexCount = IndexCount;
+            mesh.handle = mesh.handle;
+            mesh.vertexBuffer = Impl->device->CreateBuffer(vertexBufferDesc);
+            mesh.indexBuffer = Impl->device->CreateBuffer(indexBufferDesc);
+            mesh.indexCount = indexCount;
         });
     }
 
-    void RenderSystem::DestroyMesh(MeshHandle Mesh) {
-        Impl->MeshTable.Destroy(Mesh, [&](MeshRecord& MeshRecord) {
-            Impl->Device->DestroyBuffer(MeshRecord.VertexBuffer);
-            Impl->Device->DestroyBuffer(MeshRecord.IndexBuffer);
+    void RenderSystem::DestroyMesh(MeshHandle mesh) {
+        Impl->meshTable.Destroy(mesh, [&](MeshRecord& meshRecord) {
+            Impl->device->DestroyBuffer(meshRecord.vertexBuffer);
+            Impl->device->DestroyBuffer(meshRecord.indexBuffer);
         });
     }
 
-    MaterialHandle RenderSystem::CreateMaterial(MaterialType Type) {
-        return Impl->MaterialTable.Create([&](MaterialRecord& Material) {
-            Material.Handle = Material.Handle;
+    MaterialHandle RenderSystem::CreateMaterial(MaterialType type) {
+        return Impl->materialTable.Create([&](MaterialRecord& material) {
+            material.handle = material.handle;
 
-            switch (Type) {
+            switch (type) {
                 case MaterialType::Opaque:
-                    Material.Program = Impl->OpaqueShaderProgram;
-                    Material.Pipeline = Impl->OpaquePipeline;
-                    Material.DiffuseColor = Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+                    material.program = Impl->opaqueShaderProgram;
+                    material.pipeline = Impl->opaquePipeline;
+                    material.diffuseColor = Hx::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
                     break;
                 case MaterialType::Transparent:
-                    Material.Program = Impl->TransparentShaderProgram;
-                    Material.Pipeline = Impl->TransparentPipeline;
-                    Material.DiffuseColor = Math::Vector4(1.0f, 1.0f, 1.0f, 0.5f);
+                    material.program = Impl->transparentShaderProgram;
+                    material.pipeline = Impl->transparentPipeline;
+                    material.diffuseColor = Hx::Vector4(1.0f, 1.0f, 1.0f, 0.5f);
                     break;
                 case MaterialType::Unlit:
-                    Material.Program = Impl->UnlitShaderProgram;
-                    Material.Pipeline = Impl->UnlitPipeline;
-                    Material.DiffuseColor = Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+                    material.program = Impl->unlitShaderProgram;
+                    material.pipeline = Impl->unlitPipeline;
+                    material.diffuseColor = Hx::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
                     break;
             }
 
         });
     }
 
-    void RenderSystem::DestroyMaterial(MaterialHandle Material) {
-        Impl->MaterialTable.Destroy(Material, [&](MaterialRecord& MaterialRecord) {
+    void RenderSystem::DestroyMaterial(MaterialHandle material) {
+        Impl->materialTable.Destroy(material, [&](MaterialRecord& materialRecord) {
             // Note: Shader programs and pipelines are shared; do not destroy here
         });
     }
     
-    void RenderSystem::Submit(MeshHandle Mesh, MaterialHandle Material, const Math::Matrix4& Transform) {
-        if (Impl->DrawCommandCount >= MaxDrawCommands) {
+    void RenderSystem::Submit(MeshHandle mesh, MaterialHandle material, const Hx::Matrix4& transform) {
+        if (Impl->drawCommandCount >= MaxDrawCommands) {
             FlushDrawCommands();
         }
 
-        DrawCommand& Cmd = Impl->DrawCommands[Impl->DrawCommandCount++];
-        Cmd.Material = Material;
-        Cmd.Pipeline = Impl->MaterialTable.TryGet(Material)->Pipeline;
-        Cmd.VertexBuffer = Impl->MeshTable.TryGet(Mesh)->VertexBuffer;
-        Cmd.IndexBuffer = Impl->MeshTable.TryGet(Mesh)->IndexBuffer;
-        Cmd.Transform = Transform;
-        Cmd.IndexCount = static_cast<u32>(Impl->MeshTable.TryGet(Mesh)->IndexCount);
-        Cmd.IndexOffset = 0;
-        Cmd.VertexOffset = 0;
+        DrawCommand& cmd = Impl->drawCommands[Impl->drawCommandCount++];
+        cmd.material = material;
+        cmd.pipeline = Impl->materialTable.TryGet(material)->pipeline;
+        cmd.vertexBuffer = Impl->meshTable.TryGet(mesh)->vertexBuffer;
+        cmd.indexBuffer = Impl->meshTable.TryGet(mesh)->indexBuffer;
+        cmd.transform = transform;
+        cmd.indexCount = static_cast<u32>(Impl->meshTable.TryGet(mesh)->indexCount);
+        cmd.indexOffset = 0;
+        cmd.vertexOffset = 0;
     }
 
     void RenderSystem::FlushDrawCommands() {
-        RenderCore::RenderDevice* Device = Impl->Device;
+        Hx::RenderDevice* device = Impl->device;
 
-        RenderCore::RenderPassDesc OpaquePassDesc = {};
-        OpaquePassDesc.ClearColor = true;
-        OpaquePassDesc.ClearDepth = true;
-        OpaquePassDesc.ClearColorValue = Math::Vector4(0.1f, 0.1f, 0.1f, 1.0f);
-        OpaquePassDesc.ClearDepthValue = 1.0f;
+        Hx::RenderPassDesc opaquePassDesc = {};
+        opaquePassDesc.clearColor = true;
+        opaquePassDesc.clearDepth = true;
+        opaquePassDesc.clearColorValue = Hx::Vector4(0.1f, 0.1f, 0.1f, 1.0f);
+        opaquePassDesc.clearDepthValue = 1.0f;
 
-        Device->BeginRenderPass(OpaquePassDesc);
+        device->BeginRenderPass(opaquePassDesc);
 
-        for (usize i = 0; i < Impl->DrawCommandCount; ++i) {
-            const DrawCommand& Cmd = Impl->DrawCommands[i];
+        for (usize i = 0; i < Impl->drawCommandCount; ++i) {
+            const DrawCommand& cmd = Impl->drawCommands[i];
 
-            const MaterialRecord* Material = Impl->MaterialTable.TryGet(Cmd.Material);
-            if (!Material) continue;
+            const MaterialRecord* material = Impl->materialTable.TryGet(cmd.material);
+            if (!material) continue;
 
-            Device->BindPipeline(Cmd.Pipeline);
-            Device->SetUniformMat4(Material->Program, "uModelMatrix", Cmd.Transform.m);
-            Device->SetUniformMat4(Material->Program, "uViewMatrix", Impl->CurrentViewMatrix.m);
-            Device->SetUniformMat4(Material->Program, "uProjectionMatrix", Impl->CurrentProjectionMatrix.m);
-            Device->SetUniformVec4(Material->Program, "uDiffuseColor", &Material->DiffuseColor.x);
+            device->BindPipeline(cmd.pipeline);
+            device->SetUniformMat4(material->program, "uModelMatrix", cmd.transform.m);
+            device->SetUniformMat4(material->program, "uViewMatrix", Impl->currentViewMatrix.m);
+            device->SetUniformMat4(material->program, "uProjectionMatrix", Impl->currentProjectionMatrix.m);
+            device->SetUniformVec4(material->program, "uDiffuseColor", &material->diffuseColor.x);
 
-            Device->BindVertexBuffer(Cmd.VertexBuffer, 0, 0, sizeof(Vertex));
-            Device->BindBuffer(Cmd.IndexBuffer);
+            device->BindVertexBuffer(cmd.vertexBuffer, 0, 0, sizeof(Vertex));
+            device->BindBuffer(cmd.indexBuffer);
 
-            Device->DrawIndexed(Cmd.IndexCount, Cmd.IndexOffset, Cmd.VertexOffset);
+            device->DrawIndexed(cmd.indexCount, cmd.indexOffset, cmd.vertexOffset);
         }
 
-        Impl->DrawCommandCount = 0;
-        Device->EndRenderPass();
+        Impl->drawCommandCount = 0;
+        device->EndRenderPass();
     }
     
 }

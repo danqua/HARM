@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Engine {
+namespace Hx {
     struct Context;
 };
 
@@ -12,8 +12,8 @@ namespace Engine {
 
 extern "C" {
 
-    GAME_API void GameInit(Engine::Context* EngineContext);
+    GAME_API void GameInit(Hx::Context* engineContext);
     GAME_API void GameShutdown();
-    GAME_API void GameTick(float DeltaTime);
+    GAME_API void GameTick(float deltaTime);
 
 }

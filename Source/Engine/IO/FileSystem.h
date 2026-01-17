@@ -3,7 +3,7 @@
 #include "Engine/Core/Types.h"
 #include "Engine/Core/Handle.h"
 
-namespace Engine::IO {
+namespace Hx {
 
     enum class FileSeek {
         Begin,

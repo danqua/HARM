@@ -2,66 +2,64 @@
 #include "Engine/Engine.h"
 #include <iostream>
 
-using Engine::usize;
-
 class Game {
 public:
-    Game(Engine::Context* InEngineContext);
+    Game(Hx::Context* inEngineContext);
 
     void Initialize();
     void Shutdown();
-    void Tick(float DeltaTime);
+    void Tick(float deltaTime);
 
 private:
-    Engine::Context* Engine;
+    Hx::Context* engine;
 };
 
-Game::Game(Engine::Context* InEngineContext) {
-    Engine = InEngineContext;
+Game::Game(Hx::Context* inEngineContext) {
+    engine = inEngineContext;
 }
 
 void Game::Initialize() {
     std::cout << "Initialize Game" << std::endl;
 
-    auto FileSystem = Engine->FileSystem;
-    auto FileHandle = FileSystem->OpenFileWrite("Test.txt");
-    const char* Message = "Hello from Game Module!\n";
-    usize MessageSizeInBytes = strlen(Message);
-    FileHandle->Write(Message, MessageSizeInBytes);
-    FileSystem->CloseFile(FileHandle);
+    auto fileSystem = engine->fileSystem;
+    auto fileHandle = fileSystem->OpenFileWrite("Test.txt");
+    const char* message = "Hello from Game Module!\n";
+    usize messageSizeInBytes = strlen(message);
+    fileHandle->Write(message, messageSizeInBytes);
+    fileSystem->CloseFile(fileHandle);
 }
 
 void Game::Shutdown() {
     std::cout << "Shutdown Game" << std::endl;
 }
 
-void Game::Tick(float DeltaTime) {
+void Game::Tick(float deltaTime) {
 }
 
-static Game* GGameInstance = nullptr;
+static Game* gGameInstance = nullptr;
 
 extern "C" {
 
-    GAME_API void GameInit(Engine::Context* EngineContext) {
-        if (GGameInstance) {
-            GGameInstance->Shutdown();
+    GAME_API void GameInit(Hx::Context* engineContext) {
+        if (gGameInstance) {
+            gGameInstance->Shutdown();
         }
 
-        GGameInstance = new Game(EngineContext);
-        GGameInstance->Initialize();
+        gGameInstance = new Game(engineContext);
+        gGameInstance->Initialize();
     }
 
     GAME_API void GameShutdown() {
-        if (GGameInstance) {
-            GGameInstance->Shutdown();
-            delete GGameInstance;
-            GGameInstance = nullptr;
+        if (gGameInstance) {
+            gGameInstance->Shutdown();
+            delete gGameInstance;
+            gGameInstance = nullptr;
         }
     }
 
-    GAME_API void GameTick(float DeltaTime) {
-        if (GGameInstance) {
-            GGameInstance->Tick(DeltaTime);
+    GAME_API void GameTick(float deltaTime) {
+        if (gGameInstance) {
+            gGameInstance->Tick(deltaTime);
         }
     }
 

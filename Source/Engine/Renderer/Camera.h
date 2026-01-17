@@ -2,12 +2,12 @@
 
 #include "Engine/Math/Math.h"
 
-namespace Engine::Renderer {
+namespace Hx {
 
     class Camera {
     public:
-        Math::Vector3 Position;
-        Math::Vector3 Rotation;
+        Hx::Vector3 position;
+        Hx::Vector3 rotation;
 
     public:
         Camera();
@@ -16,15 +16,15 @@ namespace Engine::Renderer {
         void SetPerspective(f32 FOVDegrees, f32 AspectRatio, f32 NearPlane, f32 FarPlane);
         void SetOrthographic(f32 Width, f32 Height, f32 NearPlane, f32 FarPlane);
 
-        const Math::Matrix4& GetProjectionMatrix() const;
-        Math::Matrix4 GetViewMatrix() const;
+        const Hx::Matrix4& GetProjectionMatrix() const;
+        Hx::Matrix4 GetViewMatrix() const;
 
-        Math::Vector3 GetForwardVector() const;
-        Math::Vector3 GetRightVector() const;
-        Math::Vector3 GetUpVector() const;
+        Hx::Vector3 GetForwardVector() const;
+        Hx::Vector3 GetRightVector() const;
+        Hx::Vector3 GetUpVector() const;
 
     private:
-        Math::Matrix4 ProjectionMatrix;
+        Hx::Matrix4 projectionMatrix;
     };
 
 }
